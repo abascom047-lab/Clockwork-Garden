@@ -26,9 +26,10 @@ namespace Assets.scripts.Clockwork.Parts {
 
 		private const float MIN_ROTATION_ALLOWED = -360f;
 		private const float MAX_ROTATION_ALLOWED = 360f;
+		private const float ROTATION_TOLERANCE = 0.1f;
 
 		void Awake() {
-			_currentRotation = transform.eulerAngles;
+			_currentRotation = transform.localEulerAngles;
 
 			if (MinRotation.x < MIN_ROTATION_ALLOWED || MinRotation.y < MIN_ROTATION_ALLOWED || MinRotation.z < MIN_ROTATION_ALLOWED)
 				Debug.LogError($"MinRotation too low: {MinRotation} Minimum Rotation: {MIN_ROTATION_ALLOWED}");
@@ -65,25 +66,31 @@ namespace Assets.scripts.Clockwork.Parts {
 		}
 
 		private void UpdateOpening() {
-			if (_currentRotation == MaxRotation) {
+			UpdateRotation(MaxRotation);
+
+			if (HasReachedRotation(MaxRotation)) {
+				_currentRotation = MaxRotation;
+				transform.localRotation = Quaternion.Euler(MaxRotation);
+
 				_state = ClockworkHingeState.Open;
 				Opened?.Invoke();
 
 				return;
 			}
-
-			UpdateRotation(MaxRotation);
 		}
 
 		private void UpdateClosing() {
-			if (_currentRotation == MinRotation) {
+			UpdateRotation(MinRotation);
+
+			if (HasReachedRotation(MinRotation)) {
+				_currentRotation = MinRotation;
+				transform.localRotation = Quaternion.Euler(MinRotation);
+
 				_state = ClockworkHingeState.Close;
 				Closed?.Invoke();
 
 				return;
 			}
-
-			UpdateRotation(MinRotation);
 		}
 
 		private void UpdateRotation(Vector3 target) {
@@ -93,7 +100,14 @@ namespace Assets.scripts.Clockwork.Parts {
 			float z = Mathf.MoveTowardsAngle(_currentRotation.z, target.z, delta);
 
 			_currentRotation = new Vector3(x, y, z);
-			transform.rotation = Quaternion.Euler(_currentRotation);
+			transform.localRotation = Quaternion.Euler(_currentRotation);
+		}
+
+		private bool HasReachedRotation(Vector3 target) {
+			Quaternion current = Quaternion.Euler(_currentRotation);
+			Quaternion destination = Quaternion.Euler(target);
+
+			return Quaternion.Angle(current, destination) <= ROTATION_TOLERANCE;
 		}
 	}
 }
