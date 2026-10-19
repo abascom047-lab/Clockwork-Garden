@@ -12,7 +12,13 @@ namespace Assets.Scripts.Utils {
 
 
 		public Timer(float duration, bool start = false, bool loop = false) {
-            Active = start;
+			if (float.IsNaN(duration) || float.IsInfinity(duration) || duration <= 0f)
+				throw new ArgumentOutOfRangeException(
+					nameof(duration),
+					"Timer duration must be a positive, finite number."
+				);
+
+			Active = start;
             Loop = loop;
 			maxTime = duration;
 		}
@@ -27,7 +33,7 @@ namespace Assets.Scripts.Utils {
 				return;
 
             if (Loop) {
-                CurrentTime -= maxTime;
+                CurrentTime %= maxTime;
             } else {
                 CurrentTime = 0f;
                 Active = false;
