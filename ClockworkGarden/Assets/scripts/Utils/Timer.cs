@@ -26,10 +26,12 @@ namespace Assets.Scripts.Utils {
 			if (CurrentTime < maxTime)
 				return;
 
-			CurrentTime = 0.0f;
-
-			if (!Loop)
-				Active = false;
+            if (Loop) {
+                CurrentTime -= maxTime;
+            } else {
+                CurrentTime = 0f;
+                Active = false;
+            }
 
 			Completed?.Invoke();
 		}
