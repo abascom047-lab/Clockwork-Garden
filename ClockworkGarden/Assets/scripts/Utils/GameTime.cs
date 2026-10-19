@@ -7,7 +7,7 @@ namespace Assets.Scripts.Utils {
 
 		public static bool IsStopped => Multiplier == 0;
 
-		public static bool IsUiStopped => Multiplier == 1;
+		public static bool IsUiStopped => Multiplier == 0;
 		
 		public static float Current => Time.deltaTime * Multiplier;
 
