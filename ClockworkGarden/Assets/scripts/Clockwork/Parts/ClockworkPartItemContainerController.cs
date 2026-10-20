@@ -40,13 +40,13 @@ namespace Assets.scripts.Clockwork.Parts {
 
 		public bool Pop(out BaseItemController poppedControl) {
 			poppedControl = null;
-			int direction = LastInFirstOut ? -1 : 1;
-			_currentItemIndex += direction;
 
-			if (_currentItemIndex >= MaxItems || _currentItemIndex < 0)
+			if (!CanPop)
 				return false;
 
+			_currentItemIndex += LastInFirstOut ? -1 : 1; ;
 			poppedControl = _itemControls[_currentItemIndex];
+
 			return true;
 		}
 

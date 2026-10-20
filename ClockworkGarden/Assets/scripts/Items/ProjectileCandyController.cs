@@ -6,7 +6,7 @@ namespace Assets.scripts.Items {
 		public float Speed = 15f;
 		public float Gravity = 5f;
 
-		private Vector3 _direction;
+		private Vector3 _velocity;
 		private Timer _lifeTimer;
 
 		void Awake() {
@@ -26,13 +26,11 @@ namespace Assets.scripts.Items {
 				return;
 
 			_lifeTimer.Update();
-			
-			
-			Vector3 directionVector = _direction * Speed;
-			if (Gravity > 0)
-				directionVector += Vector3.down * Gravity;
 
-			transform.position += directionVector * GameTime.Current;
+
+			float delta = GameTime.Current;
+			transform.position += _velocity * delta;
+			_velocity += Vector3.down * Gravity * delta;
 		}
 
 		public override void Setup(Vector3 position, bool active) {
@@ -45,7 +43,7 @@ namespace Assets.scripts.Items {
 			if (Active)
 				return;
 
-			_direction = direction;
+			_velocity = direction.normalized * Speed;
 			_lifeTimer.Start();
 
 			base.Setup(startPosition, true);

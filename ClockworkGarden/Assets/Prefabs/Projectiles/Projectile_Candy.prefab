@@ -67,7 +67,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.scripts.Items.ProjectileCandyController
   Speed: 10
-  Gravity: 2
+  Gravity: 10
 --- !u!1 &2851981343851278511
 GameObject:
   m_ObjectHideFlags: 0
