@@ -46,6 +46,7 @@ namespace Assets.scripts.Items {
 				return;
 
 			_direction = direction;
+			_lifeTimer.Start();
 
 			base.Setup(startPosition, true);
 		}
