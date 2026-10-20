@@ -22,11 +22,10 @@ namespace Assets.scripts.Items {
 		}
 
 		void Update() {
-			if (!Active)
-				return;
-
 			_lifeTimer.Update();
 
+			if (!Active)
+				return;
 
 			float delta = GameTime.Current;
 			transform.position += _velocity * delta;

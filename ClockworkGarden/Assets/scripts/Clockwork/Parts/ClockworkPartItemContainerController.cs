@@ -33,8 +33,10 @@ namespace Assets.scripts.Clockwork.Parts {
 
 		private void Update() {
 			for (int i = 0; i < MaxItems; i++) {
-				if (!_itemControls[i].Active)
+				if (!_itemControls[i].Active) {
 					_itemControls[i].transform.position = transform.position + (StackDirection * i);
+					_itemControls[i].transform.rotation = transform.rotation;
+				}
 			}
 		}
 
