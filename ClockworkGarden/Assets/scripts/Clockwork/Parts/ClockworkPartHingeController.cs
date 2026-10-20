@@ -10,7 +10,7 @@ namespace Assets.scripts.Clockwork.Parts {
 		Closing
 	}
 
-	public class ClockworkHingeController : MonoBehaviour {
+	public class ClockworkPartHingeController : MonoBehaviour {
 		public Vector3 MinRotation = Vector3.zero;
 		public Vector3 MaxRotation = Vector3.zero;
 		public float Speed = 100.0f;
