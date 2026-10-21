@@ -14,6 +14,7 @@ namespace Assets.scripts.Clockwork.Parts {
 		public Vector3 MinRotation = Vector3.zero;
 		public Vector3 MaxRotation = Vector3.zero;
 		public float Speed = 100.0f;
+		public bool Reverse = false;
 
 		public event Action Opened;
 		public event Action Closed;
@@ -66,31 +67,17 @@ namespace Assets.scripts.Clockwork.Parts {
 		}
 
 		private void UpdateOpening() {
-			UpdateRotation(MaxRotation);
+			Vector3 targetRotation = Reverse ? MinRotation : MaxRotation;
 
-			if (HasReachedRotation(MaxRotation)) {
-				_currentRotation = MaxRotation;
-				transform.localRotation = Quaternion.Euler(MaxRotation);
-
-				_state = ClockworkHingeState.Open;
-				Opened?.Invoke();
-
-				return;
-			}
+			UpdateRotation(targetRotation);
+			IfAtTargetRotation(targetRotation, ClockworkHingeState.Open, Opened);
 		}
 
 		private void UpdateClosing() {
-			UpdateRotation(MinRotation);
+			Vector3 targetRotation = Reverse ? MaxRotation : MinRotation;
 
-			if (HasReachedRotation(MinRotation)) {
-				_currentRotation = MinRotation;
-				transform.localRotation = Quaternion.Euler(MinRotation);
-
-				_state = ClockworkHingeState.Close;
-				Closed?.Invoke();
-
-				return;
-			}
+			UpdateRotation(targetRotation);
+			IfAtTargetRotation(targetRotation, ClockworkHingeState.Close, Closed);
 		}
 
 		private void UpdateRotation(Vector3 target) {
@@ -101,6 +88,16 @@ namespace Assets.scripts.Clockwork.Parts {
 
 			_currentRotation = new Vector3(x, y, z);
 			transform.localRotation = Quaternion.Euler(_currentRotation);
+		}
+
+		private void IfAtTargetRotation(Vector3 target, ClockworkHingeState state, Action trigger) {
+			if (HasReachedRotation(target)) {
+				_currentRotation = target;
+				transform.localRotation = Quaternion.Euler(target);
+
+				_state = state;
+				trigger?.Invoke();
+			}
 		}
 
 		private bool HasReachedRotation(Vector3 target) {
