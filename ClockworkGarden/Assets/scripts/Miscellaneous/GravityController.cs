@@ -9,6 +9,7 @@ namespace Assets.scripts.Miscellaneous {
 
 		public event Action Grounded;
 
+		private bool _wasGrounded = false;
 		private float _velocity = 0f;
 
 		void Update() {
@@ -17,8 +18,12 @@ namespace Assets.scripts.Miscellaneous {
 
 			if (CharControl.isGrounded) {
 				_velocity = 0f;
-				Grounded?.Invoke();
+
+				if (!_wasGrounded)
+					Grounded?.Invoke();
 			}
+
+			_wasGrounded = CharControl.isGrounded;
 		}
 	}
 }
