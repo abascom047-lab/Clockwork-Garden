@@ -26,6 +26,9 @@ namespace Assets.scripts.Clockwork.Parts {
 		}
 
 		void OnControllerColliderHit(ControllerColliderHit hit) {
+			if (!Active)
+				return;
+
 			Deactivate();
 		}
 
@@ -36,6 +39,9 @@ namespace Assets.scripts.Clockwork.Parts {
 		}
 
 		public void Deactivate(bool dispatchAction = true) {
+			if (!Active)
+				return;
+
 			Active = false;
 			_velocity = 0;
 
