@@ -1,5 +1,4 @@
 ﻿using Assets.scripts.Clockwork.Parts;
-using Assets.scripts.Items;
 using Assets.Scripts.Utils;
 using UnityEngine;
 
@@ -7,7 +6,7 @@ namespace Assets.scripts.Clockwork.Denizens {
 	public class ClockworkCandyDispenserController : MonoBehaviour {
 		public ClockworkPartHingeController TopHingeControl;
 		public ClockworkPartItemContainerController ItemContainerControl;
-		public Transform FireTransform;
+		public ClockworkPartLauncherController LauncherControl;
 
 		private Timer _fireTimer;
 
@@ -34,11 +33,7 @@ namespace Assets.scripts.Clockwork.Denizens {
 		}
 
 		private void OnTopHingeOpened() {
-			if (ItemContainerControl.Pop(out BaseItemController poppedControl)) {
-				if (poppedControl is ProjectileCandyController candyControl)
-					candyControl.Fire(FireTransform.position, FireTransform.forward);
-			}
-
+			LauncherControl.Fire();
 			TopHingeControl.Close();
 		}
 

@@ -392,8 +392,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 473482733}
+  - component: {fileID: 473482734}
   m_Layer: 0
-  m_Name: Fire
+  m_Name: Launcher
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -414,6 +415,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 667489160}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+--- !u!114 &473482734
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 473482732}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4a0249b7512d6041874c28fa0eef996, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.scripts.Clockwork.Parts.ClockworkPartLauncherController
+  ItemContainerControl: {fileID: 1480945006}
 --- !u!1 &667489159
 GameObject:
   m_ObjectHideFlags: 0
@@ -464,7 +478,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Assets.scripts.Clockwork.Denizens.ClockworkCandyDispenserController
   TopHingeControl: {fileID: 1652558615}
   ItemContainerControl: {fileID: 1480945006}
-  FireTransform: {fileID: 473482733}
+  LauncherControl: {fileID: 473482734}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
