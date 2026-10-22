@@ -3,13 +3,13 @@ using UnityEngine;
 
 namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 	public class DispenserTowardsMovement : BaseDispenserMovement {
-		private Transform _targetTransform;
+		private Vector3 _targetPosition;
 		private float _distance;
 
 		public DispenserTowardsMovement(ClockworkPartPropulsionController propulsionControl, Transform transform) : base(propulsionControl, transform) { }
 
-		public bool Activate(Transform targetTransform, float distance) {
-			_targetTransform = targetTransform;
+		public bool Activate(Vector3 targetPosition, float distance) {
+			_targetPosition = targetPosition;
 			_distance = distance;
 
 			if (!base.Activate())
@@ -22,7 +22,15 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			if (!Active)
 				return;
 
-			if (Vector3.Distance(_transform.position, _targetTransform.position) <= 5f) {
+			float distance = Vector3.Distance(_transform.position, _targetPosition);
+
+			if (_distance == 0 && distance <= 0.1f) {
+				_transform.position = _targetPosition;
+				Complete();
+				return;
+			}
+
+			if (distance <= _distance) {
 				Complete();
 				return;
 			}

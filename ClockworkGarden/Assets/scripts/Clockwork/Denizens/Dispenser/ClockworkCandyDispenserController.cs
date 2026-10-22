@@ -21,21 +21,29 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		public ClockworkPartDetectorController DetectorControl;
 		public GravityController GravityControl;
 
-		private DispenserRotationMovement _rotationMovement;
-		private DispenserTowardsMovement _towardsMovement; 
+		private DispenserRotationMovement _idleRotationMovement;
+		private DispenserTowardsMovement _idleTowardsMovement;
+		private DispenserRotationMovement _approachingRotationMovement;
+		private DispenserTowardsMovement _approachingTowardsMovement; 
 
 		private Timer _fireTimer;
 		private Timer _idleTimer;
 		private DispenserState _state = DispenserState.Idle;
+		private Vector3 _center = Vector3.zero;
 		private BaseInteractableController _targetPlantingControl;
 		private bool _grounded = true;
 
 		void Awake() {
-			_rotationMovement = new DispenserRotationMovement(PropulsionControl, transform);
-			_towardsMovement = new DispenserTowardsMovement(PropulsionControl, transform);
+			_idleRotationMovement = new DispenserRotationMovement(PropulsionControl, transform);
+			_idleTowardsMovement = new DispenserTowardsMovement(PropulsionControl, transform);
+			_approachingRotationMovement = new DispenserRotationMovement(PropulsionControl, transform);
+			_approachingTowardsMovement = new DispenserTowardsMovement(PropulsionControl, transform);
 
 			_fireTimer = new Timer(0.5f);
 			_idleTimer = new Timer(0.25f, true);
+
+			_center = transform.position;
+			_idleTowardsMovement.Activate(_center, 0f);
 		}
 
 		void OnEnable() {
@@ -44,11 +52,14 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			PropulsionControl.Activated += OnPropulsionControlActivated;
 			GravityControl.Grounded += OnGravityControlGrounded;
 
-			_rotationMovement.Enable();
-			_towardsMovement.Enable();
+			_idleRotationMovement.Enable();
+			_idleTowardsMovement.Enable();
+			_approachingRotationMovement.Enable();
+			_approachingTowardsMovement.Enable();
 
-			_rotationMovement.Completed += OnRotationMovementCompleted;
-			_towardsMovement.Completed += OnTowardsMovementCompleted;
+			_idleRotationMovement.Completed += OnIdleRotationMovementCompleted;
+			_approachingRotationMovement.Completed += OnApproachingRotationMovementCompleted;
+			_approachingTowardsMovement.Completed += OnApproachingTowardsMovementCompleted;
 
 			_fireTimer.Completed += OnFireTimerCompleted;
 			_idleTimer.Completed += OnIdleTimerCompleted;
@@ -60,11 +71,14 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			PropulsionControl.Activated -= OnPropulsionControlActivated;
 			GravityControl.Grounded -= OnGravityControlGrounded;
 
-			_rotationMovement.Disable();
-			_towardsMovement.Disable();
+			_idleRotationMovement.Disable();
+			_idleTowardsMovement.Disable();
+			_approachingRotationMovement.Disable();
+			_approachingTowardsMovement.Disable();
 
-			_rotationMovement.Completed -= OnRotationMovementCompleted;
-			_towardsMovement.Completed -= OnTowardsMovementCompleted;
+			_idleRotationMovement.Completed -= OnIdleRotationMovementCompleted;
+			_approachingRotationMovement.Completed -= OnApproachingRotationMovementCompleted;
+			_approachingTowardsMovement.Completed -= OnApproachingTowardsMovementCompleted;
 
 			_fireTimer.Completed -= OnFireTimerCompleted;
 			_idleTimer.Completed -= OnIdleTimerCompleted;
@@ -88,6 +102,9 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		}
 
 		private void UpdateIdle() {
+			_idleRotationMovement.Update(_grounded);
+			_idleTowardsMovement.Update(_grounded);
+
 			_idleTimer.Update();
 		}
 
@@ -102,12 +119,12 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			_targetPlantingControl = DetectorControl.All.First();
 			_state = DispenserState.Approaching;
 
-			_rotationMovement.Activate(GetTargetRotation());
+			_approachingRotationMovement.Activate(GetTargetRotation());
 		}
 		
 		private void UpdateApproaching() {
-			_rotationMovement.Update(_grounded);
-			_towardsMovement.Update(_grounded);
+			_approachingRotationMovement.Update(_grounded);
+			_approachingTowardsMovement.Update(_grounded);
 		}
 
 		private Quaternion GetTargetRotation() {
@@ -137,11 +154,15 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			PropulsionControl.Deactivate();
 		}
 
-		private void OnRotationMovementCompleted() {
-			_towardsMovement.Activate(_targetPlantingControl.transform, 5f);
+		private void OnIdleRotationMovementCompleted() {
+			_idleTowardsMovement.Activate(_center, 0f);
 		}
 
-		private void OnTowardsMovementCompleted() {
+		private void OnApproachingRotationMovementCompleted() {
+			_approachingTowardsMovement.Activate(_targetPlantingControl.transform.position, 5f);
+		}
+
+		private void OnApproachingTowardsMovementCompleted() {
 			_state = DispenserState.Planting;
 		}
 
