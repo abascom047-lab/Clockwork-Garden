@@ -10,6 +10,7 @@ namespace Assets.scripts.Clockwork.Parts {
 		public bool Active { get; private set; } = false;
 
 		public event Action Completed;
+		public event Action<Vector3> Activated;
 
 		private Vector3 _direction = Vector3.zero;
 		private float _velocity = 0f;
@@ -33,9 +34,14 @@ namespace Assets.scripts.Clockwork.Parts {
 		}
 
 		public void Activate(Vector3 direction) {
+			if (Active)
+				return;
+
 			Active = true;
 			_velocity = Force;
 			_direction = direction;
+
+			Activated?.Invoke(direction);
 		}
 
 		public void Deactivate(bool dispatchAction = true) {
