@@ -8,20 +8,14 @@ namespace Assets.scripts.Clockwork.Parts {
 		public int Total => _detectedInteractableControls.Count;
 		public List<BaseInteractableController> All=> _detectedInteractableControls.ToList();
 
-		private HashSet<BaseInteractableController> _detectedInteractableControls;
+		private HashSet<BaseInteractableController> _detectedInteractableControls = new HashSet<BaseInteractableController>();
 
 		void OnTriggerEnter(Collider other) {
-			if (_detectedInteractableControls == null)
-				_detectedInteractableControls = new HashSet<BaseInteractableController>();
-
 			if (other.TryGetComponent<BaseInteractableController>(out BaseInteractableController otherControl))
 				_detectedInteractableControls.Add(otherControl);
 		}
 
 		void OnTriggerExit(Collider other) {
-			if (_detectedInteractableControls == null)
-				_detectedInteractableControls = new HashSet<BaseInteractableController>();
-
 			if (_detectedInteractableControls.Count == 0)
 				return;
 
@@ -29,10 +23,10 @@ namespace Assets.scripts.Clockwork.Parts {
 				_detectedInteractableControls.Remove(otherControl);
 		}
 
-		public List<T> GetAll<T>() {
+		public List<T> GetAll<T>() where T : BaseInteractableController {
 			List<T> result = new List<T>();
 
-			if (_detectedInteractableControls == null || _detectedInteractableControls.Count == 0)
+			if (_detectedInteractableControls.Count == 0)
 				return result;
 
 			foreach (BaseInteractableController interactableControl in _detectedInteractableControls) {

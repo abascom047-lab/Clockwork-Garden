@@ -164,7 +164,7 @@ namespace Assets.scripts.Clockwork.Denizens {
 		}
 
 		private void OnJumpTimerCompletedFaceTowards() {
-			if (transform.rotation == GetTargetRotation()) {
+			if (Quaternion.Angle(transform.rotation, GetTargetRotation()) <= 0.5f) {
 				_approachingState = DispenserApproachingState.MoveTowards;
 				OnPropulsionControlCompleted();
 				return;
