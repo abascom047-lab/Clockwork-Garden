@@ -14,6 +14,9 @@ namespace Assets.Scripts.Utils {
 		}
 
 		public static Quaternion GetLookAtRotation(Vector3 startPosition, Vector3 lookAtPosition, bool zeroY = false) {
+			if (startPosition == lookAtPosition)
+				return Quaternion.identity;
+
 			Vector3 direction = (lookAtPosition - startPosition).normalized;
 
 			if (zeroY)

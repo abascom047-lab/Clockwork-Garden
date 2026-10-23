@@ -146,8 +146,10 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		}
 
 		private void StartApproaching() {
-			if (_targetPlantingControl == null)
+			if (_targetPlantingControl == null) {
 				StartIdle();
+				return;
+			}
 
 			_rotationMovement.Activate(Tools.GetLookAtRotation(transform.position, _targetPlantingControl.transform.position, true));
 			SetState(DispenserState.Approaching);
@@ -226,6 +228,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			if (_state != DispenserState.Lost)
 				SetState(DispenserState.Lost);
 
+			_idleTimer.Stop();
 			_rotationMovement.Activate(Quaternion.LookRotation(transform.right));
 		}
 

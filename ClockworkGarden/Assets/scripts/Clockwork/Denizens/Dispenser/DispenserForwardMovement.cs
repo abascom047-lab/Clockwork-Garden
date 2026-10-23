@@ -9,7 +9,6 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		public DispenserForwardMovement(ClockworkPartPropulsionController propulsionControl, Transform transform) : base(propulsionControl, transform) { }
 
 		public bool Activate(int totalHops) {
-			Debug.Log($"Activated forward movement {totalHops}");
 			_maxHops = totalHops;
 			_hops = 0;
 
@@ -24,7 +23,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 				return;
 
 			_hops++;
-			if (_hops >= _maxHops) {
+			if (_hops > _maxHops) {
 				Complete();
 				return;
 			}

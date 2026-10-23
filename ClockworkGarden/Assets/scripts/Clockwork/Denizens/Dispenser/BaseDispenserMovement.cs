@@ -28,7 +28,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		}
 
 		public virtual void Disable() {
-			_propulsionControl.Completed += OnPropulsionControlCompleted;
+			_propulsionControl.Completed -= OnPropulsionControlCompleted;
 			_movementTimer.Completed -= OnMovementTimerCompleted;
 		}
 
@@ -72,9 +72,9 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 				return;
 
 			if (reason == PropulsionEndReason.Collision) {
-				Canceled?.Invoke();
 				Active = false;
 				_movementTimer.Stop();
+				Canceled?.Invoke();
 
 				return;
 			}
