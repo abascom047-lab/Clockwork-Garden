@@ -33,6 +33,9 @@ namespace Assets.scripts.Clockwork.Parts {
 				IsMoving = false;
 			}
 
+			if (!Active)
+				return;
+
 			_velocity = Mathf.Max(_velocity - 2.0f * GameTime.Current, 0f);
 			if (_velocity <= 0f)
 				Deactivate(PropulsionEndReason.Completed);
