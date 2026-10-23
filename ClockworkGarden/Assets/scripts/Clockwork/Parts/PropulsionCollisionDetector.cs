@@ -20,10 +20,8 @@ namespace Assets.scripts.Clockwork.Parts {
 				return;
 
 			Vector3 movement = hit.moveDirection;
-			Vector3 expected = _lastDirection.normalized;
-			expected.y = movement.y;
-
-			if (!PropulsionControl.Active || movement == expected)
+			Vector3 expected = new Vector3(_lastDirection.x, movement.y, _lastDirection.z);
+			if (!PropulsionControl.Active || movement != expected)
 				return;
 
 

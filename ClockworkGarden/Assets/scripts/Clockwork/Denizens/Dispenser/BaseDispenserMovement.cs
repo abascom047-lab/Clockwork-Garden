@@ -57,6 +57,8 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 				return false;
 
 			Active = false;
+			_movementTimer.Stop();
+			_propulsionControl.Deactivate(PropulsionEndReason.Cancelled);
 			return true;
 		}
 
