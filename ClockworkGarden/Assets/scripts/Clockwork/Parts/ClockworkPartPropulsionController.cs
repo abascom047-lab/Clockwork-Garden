@@ -14,6 +14,7 @@ namespace Assets.scripts.Clockwork.Parts {
 		public float Force = 10f;
 
 		public bool Active { get; private set; } = false;
+		public bool IsMoving { get; private set; } = false;
 
 		public event Action<PropulsionEndReason> Completed;
 		public event Action<Vector3> Activated;
@@ -25,7 +26,12 @@ namespace Assets.scripts.Clockwork.Parts {
 			if (!Active)
 				return;
 
-			CharControl.Move(_direction * _velocity * GameTime.Current);
+			IsMoving = true;
+			try {
+				CharControl.Move(_direction * _velocity * GameTime.Current);
+			} finally {
+				IsMoving = false;
+			}
 
 			_velocity = Mathf.Max(_velocity - 2.0f * GameTime.Current, 0f);
 			if (_velocity <= 0f)
