@@ -3,13 +3,19 @@ using System;
 using UnityEngine;
 
 namespace Assets.scripts.Clockwork.Parts {
+	public enum PropulsionEndReason {
+		Completed,
+		Collision,
+		Cancelled
+	}
+
 	public class ClockworkPartPropulsionController : MonoBehaviour {
 		public CharacterController CharControl;
 		public float Force = 10f;
 
 		public bool Active { get; private set; } = false;
 
-		public event Action Completed;
+		public event Action<PropulsionEndReason> Completed;
 		public event Action<Vector3> Activated;
 
 		private Vector3 _direction = Vector3.zero;
@@ -23,14 +29,7 @@ namespace Assets.scripts.Clockwork.Parts {
 
 			_velocity = Mathf.Max(_velocity - 2.0f * GameTime.Current, 0f);
 			if (_velocity <= 0f)
-				Deactivate();
-		}
-
-		void OnControllerColliderHit(ControllerColliderHit hit) {
-			if (!Active)
-				return;
-
-			Deactivate();
+				Deactivate(PropulsionEndReason.Completed);
 		}
 
 		public void Activate(Vector3 direction) {
@@ -44,15 +43,14 @@ namespace Assets.scripts.Clockwork.Parts {
 			Activated?.Invoke(direction);
 		}
 
-		public void Deactivate(bool dispatchAction = true) {
+		public void Deactivate(PropulsionEndReason reason) {
 			if (!Active)
 				return;
 
 			Active = false;
 			_velocity = 0;
 
-			if (dispatchAction)
-				Completed?.Invoke();
+			Completed?.Invoke(reason);
 		}
 	}
 }

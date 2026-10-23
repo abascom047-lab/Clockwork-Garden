@@ -6,8 +6,9 @@ using UnityEngine;
 namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 	public class BaseDispenserMovement {
 		public event Action Completed;
+		public event Action Canceled;
 
-		public bool Active { get; protected set; }
+		public bool Active { get; protected set; } = false;
 
 		protected ClockworkPartPropulsionController _propulsionControl;
 		protected Transform _transform;
@@ -51,15 +52,32 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			return true;
 		}
 
+		public virtual bool Deactivate() {
+			if (!Active)
+				return false;
+
+			Active = false;
+			return true;
+		}
+
 		protected void Complete() {
+			Active = false;
 			Completed?.Invoke();
 		}
 
 		protected virtual void Move() { }
 
-		protected void OnPropulsionControlCompleted() {
+		protected void OnPropulsionControlCompleted(PropulsionEndReason reason) {
 			if (!Active)
 				return;
+
+			if (reason == PropulsionEndReason.Collision) {
+				Canceled?.Invoke();
+				Active = false;
+				_movementTimer.Stop();
+
+				return;
+			}
 
 			_movementTimer.Reset(true);
 		}

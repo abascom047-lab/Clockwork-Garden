@@ -10,6 +10,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		Idle,
 		Searching,
 		Approaching,
+		Lost,
 		Planting
 	}
 
@@ -21,29 +22,28 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		public ClockworkPartDetectorController DetectorControl;
 		public GravityController GravityControl;
 
-		private DispenserRotationMovement _idleRotationMovement;
-		private DispenserTowardsMovement _idleTowardsMovement;
-		private DispenserRotationMovement _approachingRotationMovement;
-		private DispenserTowardsMovement _approachingTowardsMovement; 
+		private DispenserRotationMovement _rotationMovement;
+		private DispenserTowardsMovement _towardsMovement;
+		private DispenserForwardMovement _forwardMovement;
 
 		private Timer _fireTimer;
 		private Timer _idleTimer;
 		private DispenserState _state = DispenserState.Idle;
+		private DispenserState _lastState = DispenserState.Idle;
 		private Vector3 _center = Vector3.zero;
 		private BaseInteractableController _targetPlantingControl;
 		private bool _grounded = true;
 
 		void Awake() {
-			_idleRotationMovement = new DispenserRotationMovement(PropulsionControl, transform);
-			_idleTowardsMovement = new DispenserTowardsMovement(PropulsionControl, transform);
-			_approachingRotationMovement = new DispenserRotationMovement(PropulsionControl, transform);
-			_approachingTowardsMovement = new DispenserTowardsMovement(PropulsionControl, transform);
+			_rotationMovement = new DispenserRotationMovement(PropulsionControl, transform);
+			_towardsMovement = new DispenserTowardsMovement(PropulsionControl, transform);
+			_forwardMovement = new DispenserForwardMovement(PropulsionControl, transform);
 
 			_fireTimer = new Timer(0.5f);
 			_idleTimer = new Timer(0.25f, true);
 
 			_center = transform.position;
-			_idleTowardsMovement.Activate(_center, 0f);
+			_towardsMovement.Activate(_center, 0f);
 		}
 
 		void OnEnable() {
@@ -52,14 +52,15 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			PropulsionControl.Activated += OnPropulsionControlActivated;
 			GravityControl.Grounded += OnGravityControlGrounded;
 
-			_idleRotationMovement.Enable();
-			_idleTowardsMovement.Enable();
-			_approachingRotationMovement.Enable();
-			_approachingTowardsMovement.Enable();
+			_rotationMovement.Enable();
+			_towardsMovement.Enable();
+			_forwardMovement.Enable();
 
-			_idleRotationMovement.Completed += OnIdleRotationMovementCompleted;
-			_approachingRotationMovement.Completed += OnApproachingRotationMovementCompleted;
-			_approachingTowardsMovement.Completed += OnApproachingTowardsMovementCompleted;
+			_rotationMovement.Completed += OnRotationMovementCompleted;
+			_towardsMovement.Completed += OnTowardsMovementCompleted;
+			_towardsMovement.Canceled += OnMovementCanceled;
+			_forwardMovement.Completed += OnForwardMovementCompleted;
+			_forwardMovement.Canceled += OnMovementCanceled;
 
 			_fireTimer.Completed += OnFireTimerCompleted;
 			_idleTimer.Completed += OnIdleTimerCompleted;
@@ -71,68 +72,91 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			PropulsionControl.Activated -= OnPropulsionControlActivated;
 			GravityControl.Grounded -= OnGravityControlGrounded;
 
-			_idleRotationMovement.Disable();
-			_idleTowardsMovement.Disable();
-			_approachingRotationMovement.Disable();
-			_approachingTowardsMovement.Disable();
+			_rotationMovement.Disable();
+			_towardsMovement.Disable();
+			_forwardMovement.Disable();
 
-			_idleRotationMovement.Completed -= OnIdleRotationMovementCompleted;
-			_approachingRotationMovement.Completed -= OnApproachingRotationMovementCompleted;
-			_approachingTowardsMovement.Completed -= OnApproachingTowardsMovementCompleted;
+			_rotationMovement.Completed -= OnRotationMovementCompleted;
+			_towardsMovement.Completed -= OnTowardsMovementCompleted;
+			_towardsMovement.Canceled -= OnMovementCanceled;
+			_forwardMovement.Completed -= OnForwardMovementCompleted;
+			_forwardMovement.Canceled -= OnMovementCanceled;
 
 			_fireTimer.Completed -= OnFireTimerCompleted;
 			_idleTimer.Completed -= OnIdleTimerCompleted;
 		}
 
 		void Update() {
+			UpdateTimers();
+			UpdateMovers();
+
 			switch (_state) {
-				case DispenserState.Idle: {
-						UpdateIdle();
-						break;
-					}
 				case DispenserState.Searching: {
 						UpdateSearching();
 						break;
 					}
+			}
+		}
+
+		private void UpdateTimers() {
+			_idleTimer.Update();
+		}
+
+		private void UpdateMovers() {
+			_rotationMovement.Update(_grounded);
+			_towardsMovement.Update(_grounded);
+			_forwardMovement.Update(_grounded);
+		}
+
+		private void UpdateSearching() {
+			if (DetectorControl.Total == 0) {
+				StartIdle();
+				return;
+			}
+
+			_targetPlantingControl = DetectorControl.All.First();
+			StartApproaching();
+		}
+
+		private void SetState(DispenserState newState) {
+			_lastState = _state;
+			_state = newState;
+		}
+
+		private void RevertState() {
+			DeactivateMovers();
+
+			switch (_lastState) {
+				case DispenserState.Idle: {
+						StartIdle();
+						break;
+					}
 				case DispenserState.Approaching: {
-						UpdateApproaching();
+						StartApproaching();
 						break;
 					}
 			}
 		}
 
-		private void UpdateIdle() {
-			_idleRotationMovement.Update(_grounded);
-			_idleTowardsMovement.Update(_grounded);
+		private void StartIdle() {
+			_idleTimer.Start();
+			_rotationMovement.Activate(Tools.GetLookAtRotation(transform.position, _center, true));
 
-			_idleTimer.Update();
+			SetState(DispenserState.Idle);
 		}
 
-		private void UpdateSearching() {
-			if (DetectorControl.Total == 0) {
-				_state = DispenserState.Idle;
-				_idleTimer.Start();
+		private void StartApproaching() {
+			if (_targetPlantingControl == null)
+				StartIdle();
 
-				return;
-			}
-
-			_targetPlantingControl = DetectorControl.All.First();
-			_state = DispenserState.Approaching;
-
-			_approachingRotationMovement.Activate(GetTargetRotation());
-		}
-		
-		private void UpdateApproaching() {
-			_approachingRotationMovement.Update(_grounded);
-			_approachingTowardsMovement.Update(_grounded);
+			_rotationMovement.Activate(Tools.GetLookAtRotation(transform.position, _targetPlantingControl.transform.position, true));
+			SetState(DispenserState.Approaching);
 		}
 
-		private Quaternion GetTargetRotation() {
-			Vector3 forward = _targetPlantingControl.transform.position - transform.position;
-			forward = forward.normalized;
-			forward.y = 0;
-
-			return Quaternion.LookRotation(forward);
+		private void DeactivateMovers() {
+			_rotationMovement.Deactivate();
+			_towardsMovement.Deactivate();
+			_forwardMovement.Deactivate();
 		}
 
 		private void OnTopHingeOpened() {
@@ -151,19 +175,58 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 
 		private void OnGravityControlGrounded() {
 			_grounded = true;
-			PropulsionControl.Deactivate();
+			PropulsionControl.Deactivate(PropulsionEndReason.Cancelled);
 		}
 
-		private void OnIdleRotationMovementCompleted() {
-			_idleTowardsMovement.Activate(_center, 0f);
+		private void OnRotationMovementCompleted() {
+			switch (_state) {
+				case DispenserState.Idle: {
+						_towardsMovement.Activate(_center, 0f);
+						break;
+					}
+				case DispenserState.Approaching: {
+						_towardsMovement.Activate(_targetPlantingControl.transform.position, 5f);
+						break;
+					}
+				case DispenserState.Lost: {
+						_forwardMovement.Activate(3);
+						break;
+					}
+			}
 		}
 
-		private void OnApproachingRotationMovementCompleted() {
-			_approachingTowardsMovement.Activate(_targetPlantingControl.transform.position, 5f);
+		private void OnTowardsMovementCompleted() {
+			switch (_state) {
+				case DispenserState.Idle: {
+						_forwardMovement.Activate(5);
+						break;
+					}
+				case DispenserState.Approaching: {
+						DeactivateMovers();
+						SetState(DispenserState.Planting);
+						break;
+					}
+			}
 		}
 
-		private void OnApproachingTowardsMovementCompleted() {
-			_state = DispenserState.Planting;
+		private void OnForwardMovementCompleted() {
+			switch (_state) {
+				case DispenserState.Idle: {
+						_rotationMovement.Activate(Tools.GetLookAtRotation(transform.position, _center, true));
+						break;
+					}
+				case DispenserState.Lost: {
+						RevertState();
+						break;
+					}
+			}
+		}
+
+		private void OnMovementCanceled() {
+			if (_state != DispenserState.Lost)
+				SetState(DispenserState.Lost);
+
+			_rotationMovement.Activate(Quaternion.LookRotation(transform.right));
 		}
 
 		private void OnFireTimerCompleted() {
@@ -174,7 +237,8 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		}
 
 		private void OnIdleTimerCompleted() {
-			_state = DispenserState.Searching;
+			DeactivateMovers();
+			SetState(DispenserState.Searching);
 		}
 	}
 }
