@@ -21,8 +21,9 @@ namespace Assets.scripts.Clockwork.Parts {
 
 			Vector3 movement = hit.moveDirection;
 			Vector3 expected = _lastDirection.normalized;
+			expected.y = movement.y;
 
-			if (!PropulsionControl.Active || Vector3.Dot(movement, expected) < 0.95f)
+			if (!PropulsionControl.Active || movement == expected)
 				return;
 
 
