@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 
 namespace Assets.Scripts.Utils {
     public class Timer {
@@ -35,8 +36,7 @@ namespace Assets.Scripts.Utils {
             if (Loop) {
                 CurrentTime %= maxTime;
             } else {
-                CurrentTime = 0f;
-                Active = false;
+                Stop();
             }
 
 			Completed?.Invoke();

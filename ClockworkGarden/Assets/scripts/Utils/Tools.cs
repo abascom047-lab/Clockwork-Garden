@@ -12,5 +12,17 @@ namespace Assets.Scripts.Utils {
 
 			return newRotation;
 		}
+
+		public static Quaternion GetLookAtRotation(Vector3 startPosition, Vector3 lookAtPosition, bool zeroY = false) {
+			if (startPosition == lookAtPosition)
+				return Quaternion.identity;
+
+			Vector3 direction = (lookAtPosition - startPosition).normalized;
+
+			if (zeroY)
+				direction.y = 0;
+
+			return Quaternion.LookRotation(direction);
+		}
 	}
 }
