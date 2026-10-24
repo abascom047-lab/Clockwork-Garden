@@ -23,8 +23,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 				return;
 
 			float distance = Vector3.Distance(_transform.position, _targetPosition);
-
-			if (_distance == 0 && distance <= 0.1f) {
+			if (_distance == 0 && distance <= 0.5f) {
 				_transform.position = _targetPosition;
 				Complete();
 				return;

@@ -8,7 +8,6 @@ using UnityEngine;
 namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 	public enum DispenserState {
 		Idle,
-		Searching,
 		Approaching,
 		Lost,
 		Planting
@@ -27,7 +26,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		private DispenserForwardMovement _forwardMovement;
 		private DispenserShooting _shooting;
 
-		private Timer _idleTimer;
+		private Timer _searchTimer;
 		private DispenserState _state = DispenserState.Idle;
 		private DispenserState _lastState = DispenserState.Idle;
 		private Vector3 _center = Vector3.zero;
@@ -40,7 +39,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			_forwardMovement = new DispenserForwardMovement(PropulsionControl, transform);
 			_shooting = new DispenserShooting(ItemContainerControl, HingeControl, LauncherControl);
 
-			_idleTimer = new Timer(5.0f);
+			_searchTimer = new Timer(0.5f);
 
 			_center = transform.position;
 		}
@@ -65,7 +64,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			_forwardMovement.Canceled += OnMovementCanceled;
 			_shooting.Completed += OnShootingCompleted;
 
-			_idleTimer.Completed += OnIdleTimerCompleted;
+			_searchTimer.Completed += OnSearchTimerCompleted;
 		}
 
 		void OnDisable() {
@@ -84,46 +83,15 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			_forwardMovement.Canceled -= OnMovementCanceled;
 			_shooting.Completed -= OnShootingCompleted;
 
-			_idleTimer.Completed -= OnIdleTimerCompleted;
+			_searchTimer.Completed -= OnSearchTimerCompleted;
 		}
 
 		void Update() {
-			UpdateMovers();
-
-			switch (_state) {
-				case DispenserState.Idle: {
-						_idleTimer.Update();
-						break;
-					}
-				case DispenserState.Searching: {
-						UpdateSearching();
-						break;
-					}
-			}
-		}
-
-		private void UpdateMovers() {
 			_rotationMovement.Update(_grounded);
 			_towardsMovement.Update(_grounded);
 			_forwardMovement.Update(_grounded);
-		}
 
-		private void UpdateSearching() {
-			List<InteractablePlantingSpotController> possibleTargetsList = DetectorControl.GetAll<InteractablePlantingSpotController>();
-			if (possibleTargetsList.Count == 0) {
-				StartIdle();
-				return;
-			}
-
-			foreach (InteractablePlantingSpotController target in possibleTargetsList) {
-				if (!target.Planted) {
-					_targetPlantingControl = target;
-					StartApproaching();
-					return;
-				}
-			}
-
-			StartIdle();
+			_searchTimer.Update();
 		}
 
 		private void SetState(DispenserState newState) {
@@ -147,9 +115,10 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		}
 
 		private void StartIdle() {
+			DeactivateMovers();
 			SetState(DispenserState.Idle);
 
-			_idleTimer.Reset(true);
+			_searchTimer.Reset(true);
 			_rotationMovement.Activate(Tools.GetLookAtRotation(transform.position, _center, true));
 		}
 
@@ -159,6 +128,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 				return;
 			}
 
+			DeactivateMovers();
 			SetState(DispenserState.Approaching);
 			_rotationMovement.Activate(Tools.GetLookAtRotation(transform.position, _targetPlantingControl.transform.position, true));
 		}
@@ -237,7 +207,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			if (_state != DispenserState.Lost)
 				SetState(DispenserState.Lost);
 
-			_idleTimer.Stop();
+			_searchTimer.Stop();
 			_rotationMovement.Activate(Quaternion.LookRotation(transform.right));
 		}
 
@@ -245,9 +215,23 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			StartIdle();
 		}
 
-		private void OnIdleTimerCompleted() {
-			DeactivateMovers();
-			SetState(DispenserState.Searching);
+		private void OnSearchTimerCompleted() {
+			List<InteractablePlantingSpotController> possibleTargetsList = DetectorControl.GetAll<InteractablePlantingSpotController>();
+			if (possibleTargetsList.Count == 0) {
+				_searchTimer.Start();
+				return;
+			}
+
+			foreach (InteractablePlantingSpotController target in possibleTargetsList) {
+				if (!target.Planted) {
+					_targetPlantingControl = target;
+					_searchTimer.Stop();
+					StartApproaching();
+					return;
+				}
+			}
+
+			_searchTimer.Start();
 		}
 	}
 }
