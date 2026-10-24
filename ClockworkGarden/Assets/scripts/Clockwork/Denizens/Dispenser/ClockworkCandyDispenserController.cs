@@ -40,10 +40,13 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			_forwardMovement = new DispenserForwardMovement(PropulsionControl, transform);
 			_shooting = new DispenserShooting(ItemContainerControl, HingeControl, LauncherControl);
 
-			_idleTimer = new Timer(5.0f, true);
+			_idleTimer = new Timer(5.0f);
 
 			_center = transform.position;
-			_forwardMovement.Activate(3);
+		}
+
+		void Start() {
+			StartIdle();
 		}
 
 		void OnEnable() {
