@@ -43,6 +43,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			_idleTimer = new Timer(5.0f, true);
 
 			_center = transform.position;
+			_forwardMovement.Activate(3);
 		}
 
 		void OnEnable() {

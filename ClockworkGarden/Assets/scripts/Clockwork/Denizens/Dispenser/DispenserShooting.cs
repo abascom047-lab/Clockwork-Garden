@@ -42,11 +42,17 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		}
 
 		private void OnHingeControlOpened() {
+			if (!Active)
+				return;
+
 			_launcherControl.Fire();
 			_hingeControl.Close();
 		}
 
 		private void OnHingeControlClosed() {
+			if (!Active)
+				return;
+
 			Active = false;
 			Completed?.Invoke();
 		}
