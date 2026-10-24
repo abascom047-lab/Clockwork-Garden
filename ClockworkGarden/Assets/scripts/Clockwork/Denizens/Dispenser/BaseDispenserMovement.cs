@@ -77,6 +77,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 				Active = false;
 				_movementTimer.Stop();
 				Canceled?.Invoke();
+				Debug.Log("Movement canceled");
 
 				return;
 			}

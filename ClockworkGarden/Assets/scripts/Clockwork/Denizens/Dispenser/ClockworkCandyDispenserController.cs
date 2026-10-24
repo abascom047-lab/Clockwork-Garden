@@ -2,7 +2,7 @@
 using Assets.scripts.Interactables;
 using Assets.scripts.Miscellaneous;
 using Assets.Scripts.Utils;
-using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.scripts.Clockwork.Denizens.Dispenser {
@@ -15,7 +15,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 	}
 
 	public class ClockworkCandyDispenserController : MonoBehaviour {
-		public ClockworkPartHingeController TopHingeControl;
+		public ClockworkPartHingeController HingeControl;
 		public ClockworkPartItemContainerController ItemContainerControl;
 		public ClockworkPartLauncherController LauncherControl;
 		public ClockworkPartPropulsionController PropulsionControl;
@@ -25,81 +25,77 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		private DispenserRotationMovement _rotationMovement;
 		private DispenserTowardsMovement _towardsMovement;
 		private DispenserForwardMovement _forwardMovement;
+		private DispenserShooting _shooting;
 
-		private Timer _fireTimer;
 		private Timer _idleTimer;
 		private DispenserState _state = DispenserState.Idle;
 		private DispenserState _lastState = DispenserState.Idle;
 		private Vector3 _center = Vector3.zero;
-		private BaseInteractableController _targetPlantingControl;
+		private InteractablePlantingSpotController _targetPlantingControl;
 		private bool _grounded = true;
 
 		void Awake() {
 			_rotationMovement = new DispenserRotationMovement(PropulsionControl, transform);
 			_towardsMovement = new DispenserTowardsMovement(PropulsionControl, transform);
 			_forwardMovement = new DispenserForwardMovement(PropulsionControl, transform);
+			_shooting = new DispenserShooting(ItemContainerControl, HingeControl, LauncherControl);
 
-			_fireTimer = new Timer(0.5f);
-			_idleTimer = new Timer(0.25f, true);
+			_idleTimer = new Timer(5.0f, true);
 
 			_center = transform.position;
-			_towardsMovement.Activate(_center, 0f);
 		}
 
 		void OnEnable() {
-			TopHingeControl.Opened += OnTopHingeOpened;
-			TopHingeControl.Closed += OnTopHingeClosed;
 			PropulsionControl.Activated += OnPropulsionControlActivated;
 			GravityControl.Grounded += OnGravityControlGrounded;
 
 			_rotationMovement.Enable();
 			_towardsMovement.Enable();
 			_forwardMovement.Enable();
+			_shooting.Enable();
 
 			_rotationMovement.Completed += OnRotationMovementCompleted;
 			_towardsMovement.Completed += OnTowardsMovementCompleted;
 			_towardsMovement.Canceled += OnMovementCanceled;
 			_forwardMovement.Completed += OnForwardMovementCompleted;
 			_forwardMovement.Canceled += OnMovementCanceled;
+			_shooting.Completed += OnShootingCompleted;
 
-			_fireTimer.Completed += OnFireTimerCompleted;
 			_idleTimer.Completed += OnIdleTimerCompleted;
 		}
 
 		void OnDisable() {
-			TopHingeControl.Opened -= OnTopHingeOpened;
-			TopHingeControl.Closed -= OnTopHingeClosed;
 			PropulsionControl.Activated -= OnPropulsionControlActivated;
 			GravityControl.Grounded -= OnGravityControlGrounded;
 
 			_rotationMovement.Disable();
 			_towardsMovement.Disable();
 			_forwardMovement.Disable();
+			_shooting.Disable();
 
 			_rotationMovement.Completed -= OnRotationMovementCompleted;
 			_towardsMovement.Completed -= OnTowardsMovementCompleted;
 			_towardsMovement.Canceled -= OnMovementCanceled;
 			_forwardMovement.Completed -= OnForwardMovementCompleted;
 			_forwardMovement.Canceled -= OnMovementCanceled;
+			_shooting.Completed -= OnShootingCompleted;
 
-			_fireTimer.Completed -= OnFireTimerCompleted;
 			_idleTimer.Completed -= OnIdleTimerCompleted;
 		}
 
 		void Update() {
-			UpdateTimers();
 			UpdateMovers();
 
 			switch (_state) {
+				case DispenserState.Idle: {
+						_idleTimer.Update();
+						break;
+					}
 				case DispenserState.Searching: {
 						UpdateSearching();
 						break;
 					}
 			}
-		}
-
-		private void UpdateTimers() {
-			_idleTimer.Update();
 		}
 
 		private void UpdateMovers() {
@@ -109,13 +105,21 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		}
 
 		private void UpdateSearching() {
-			if (DetectorControl.Total == 0) {
+			List<InteractablePlantingSpotController> possibleTargetsList = DetectorControl.GetAll<InteractablePlantingSpotController>();
+			if (possibleTargetsList.Count == 0) {
 				StartIdle();
 				return;
 			}
 
-			_targetPlantingControl = DetectorControl.All.First();
-			StartApproaching();
+			foreach (InteractablePlantingSpotController target in possibleTargetsList) {
+				if (!target.Planted) {
+					_targetPlantingControl = target;
+					StartApproaching();
+					return;
+				}
+			}
+
+			StartIdle();
 		}
 
 		private void SetState(DispenserState newState) {
@@ -139,10 +143,10 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		}
 
 		private void StartIdle() {
-			_idleTimer.Start();
-			_rotationMovement.Activate(Tools.GetLookAtRotation(transform.position, _center, true));
-
 			SetState(DispenserState.Idle);
+
+			_idleTimer.Reset(true);
+			_rotationMovement.Activate(Tools.GetLookAtRotation(transform.position, _center, true));
 		}
 
 		private void StartApproaching() {
@@ -151,23 +155,25 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 				return;
 			}
 
-			_rotationMovement.Activate(Tools.GetLookAtRotation(transform.position, _targetPlantingControl.transform.position, true));
 			SetState(DispenserState.Approaching);
+			_rotationMovement.Activate(Tools.GetLookAtRotation(transform.position, _targetPlantingControl.transform.position, true));
+		}
+
+		private void StartPlanting() {
+			DeactivateMovers();
+
+			if (!_shooting.Activate()) {
+				StartIdle();
+				return;
+			}
+
+			SetState(DispenserState.Planting);
 		}
 
 		private void DeactivateMovers() {
 			_rotationMovement.Deactivate();
 			_towardsMovement.Deactivate();
 			_forwardMovement.Deactivate();
-		}
-
-		private void OnTopHingeOpened() {
-			LauncherControl.Fire();
-			TopHingeControl.Close();
-		}
-
-		private void OnTopHingeClosed() {
-			_fireTimer.Reset(ItemContainerControl.CanPop);
 		}
 
 		private void OnPropulsionControlActivated(Vector3 direction) {
@@ -187,7 +193,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 						break;
 					}
 				case DispenserState.Approaching: {
-						_towardsMovement.Activate(_targetPlantingControl.transform.position, 5f);
+						_towardsMovement.Activate(_targetPlantingControl.transform.position, 7.5f);
 						break;
 					}
 				case DispenserState.Lost: {
@@ -204,8 +210,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 						break;
 					}
 				case DispenserState.Approaching: {
-						DeactivateMovers();
-						SetState(DispenserState.Planting);
+						StartPlanting();
 						break;
 					}
 			}
@@ -232,11 +237,8 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			_rotationMovement.Activate(Quaternion.LookRotation(transform.right));
 		}
 
-		private void OnFireTimerCompleted() {
-			if (!ItemContainerControl.CanPop)
-				return;
-
-			TopHingeControl.Open();
+		private void OnShootingCompleted() {
+			StartIdle();
 		}
 
 		private void OnIdleTimerCompleted() {
