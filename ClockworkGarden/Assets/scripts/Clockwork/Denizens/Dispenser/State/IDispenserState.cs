@@ -2,8 +2,8 @@
 
 namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 	public interface IDispenserState {
-		void OnEnable();
-		void OnDisable();
+		void Enable();
+		void Disable();
 		void Update(bool grounded);
 		void Start();
 		void Stop();

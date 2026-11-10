@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 	public class DispenserLostState : IDispenserState {
-		private event Action Completed;
+		public event Action Completed;
 
 		private readonly Transform _transform;
 
@@ -20,7 +20,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			_forwardMovement = new DispenserForwardMovement(propulsionControl, _transform);
 		}
 
-		public void OnEnable() {
+		public void Enable() {
 			_rotationMovement.Enable();
 			_forwardMovement.Enable();
 
@@ -28,7 +28,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			_forwardMovement.Completed += OnForwardMovementCompleted;
 		}
 
-		public void OnDisable() {
+		public void Disable() {
 			_rotationMovement.Disable();
 			_forwardMovement.Disable();
 

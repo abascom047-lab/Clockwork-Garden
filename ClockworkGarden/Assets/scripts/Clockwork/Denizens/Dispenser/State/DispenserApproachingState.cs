@@ -7,7 +7,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 	public class DispenserApproachingState : IDispenserState {
 		public event Action Completed;
 		public event Action Failed;
-		public event Action Lost;
+		public event Action<IDispenserState> Lost;
 
 		private readonly Transform _transform;
 
@@ -24,7 +24,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			_towardsMovement = new DispenserTowardsMovement(propulsionControl, _transform);
 		}
 
-		public void OnEnable() {
+		public void Enable() {
 			_rotationMovement.Enable();
 			_towardsMovement.Enable();
 
@@ -33,7 +33,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			_towardsMovement.Canceled += OnMovementCanceled;
 		}
 
-		public void OnDisable() {
+		public void Disable() {
 			_rotationMovement.Disable();
 			_towardsMovement.Disable();
 
@@ -94,7 +94,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 
 		private void OnMovementCanceled() {
 			Stop();
-			Lost?.Invoke();
+			Lost?.Invoke(this);
 		}
 	}
 }

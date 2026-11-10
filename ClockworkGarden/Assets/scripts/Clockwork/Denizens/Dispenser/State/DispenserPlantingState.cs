@@ -18,12 +18,12 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			_shooting = new DispenserShooting(itemContainerControl, hingeControl, launcherControl);
 		}
 
-		public void OnEnable() {
+		public void Enable() {
 			_shooting.Enable();
 			_shooting.Completed += OnShootingCompleted;
 		}
 
-		public void OnDisable() {
+		public void Disable() {
 			_shooting.Disable();
 			_shooting.Completed -= OnShootingCompleted;
 		}

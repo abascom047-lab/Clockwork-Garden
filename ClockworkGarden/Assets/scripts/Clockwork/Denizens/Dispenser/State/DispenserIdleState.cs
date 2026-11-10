@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Assets.scripts.Clockwork.Denizens.Dispenser.State {
+namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 	public class DispenserIdleState : IDispenserState {
 		public event Action<InteractablePlantingSpotController> TargetFound;
-		public event Action Lost;
+		public event Action<IDispenserState> Lost;
 
 		private readonly ClockworkPartDetectorController _detectorControl;
 		private readonly Transform _transform;
@@ -19,6 +19,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser.State {
 		private DispenserForwardMovement _forwardMovement;
 
 		private Timer _searchTimer;
+		private bool _isActive = false;
 
 		private const float SEARCH_TIME = 0.5f;
 
@@ -40,7 +41,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser.State {
 			_searchTimer = new Timer(SEARCH_TIME);
 		}
 
-		public void OnEnable() {
+		public void Enable() {
 			_rotationMovement.Enable();
 			_towardsMovement.Enable();
 			_forwardMovement.Enable();
@@ -54,7 +55,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser.State {
 			_searchTimer.Completed += OnSearchTimerCompleted;
 		}
 
-		public void OnDisable() {
+		public void Disable() {
 			_rotationMovement.Disable();
 			_towardsMovement.Disable();
 			_forwardMovement.Disable();
@@ -77,11 +78,17 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser.State {
 		}
 
 		public void Start() {
+			if (_isActive)
+				return;
+
+			_isActive = true;
 			_rotationMovement.Activate(Tools.GetLookAtRotation(_transform.position, _center, true));
 			_searchTimer.Reset(true);
 		}
 
 		public void Stop() {
+			_isActive = false;
+
 			_rotationMovement.Deactivate();
 			_towardsMovement.Deactivate();
 			_forwardMovement.Deactivate();
@@ -103,7 +110,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser.State {
 
 		private void OnMovementCanceled() {
 			Stop();
-			Lost?.Invoke();
+			Lost?.Invoke(this);
 		}
 
 		private void OnSearchTimerCompleted() {
