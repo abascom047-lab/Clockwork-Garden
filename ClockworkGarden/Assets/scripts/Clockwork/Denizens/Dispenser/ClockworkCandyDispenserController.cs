@@ -59,10 +59,10 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			PropulsionControl.Activated -= OnPropulsionControlActivated;
 			GravityControl.Grounded -= OnGravityControlGrounded;
 
-			_idleState.Enable();
-			_approachingState.Enable();
-			_lostState.Enable();
-			_plantingState.Enable();
+			_idleState.Disable();
+			_approachingState.Disable();
+			_lostState.Disable();
+			_plantingState.Disable();
 
 			_idleState.TargetFound -= OnIdleStateTargetFound;
 			_idleState.Lost -= OnStateLost;
@@ -76,8 +76,9 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 
 		void Update() {
 			if (_nextState != null) {
-				_nextState.Start();
+				IDispenserState nextState = _nextState;
 				_nextState = null;
+				nextState.Start();
 
 				return;
 			}
