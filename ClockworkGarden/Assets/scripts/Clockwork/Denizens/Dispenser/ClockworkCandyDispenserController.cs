@@ -118,7 +118,6 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 
 			DeactivateMovers();
 			SetState(DispenserState.Approaching);
-			_rotationMovement.Activate(Tools.GetLookAtRotation(transform.position, _targetPlantingControl.transform.position, true));
 		}
 
 		private void StartPlanting() {

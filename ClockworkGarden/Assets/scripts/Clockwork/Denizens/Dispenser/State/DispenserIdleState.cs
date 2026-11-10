@@ -41,6 +41,10 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser.State {
 		}
 
 		public void OnEnable() {
+			_rotationMovement.Enable();
+			_towardsMovement.Enable();
+			_forwardMovement.Enable();
+
 			_rotationMovement.Completed += OnRotationMovementCompleted;
 			_towardsMovement.Completed += OnTowardsMovementCompleted;
 			_towardsMovement.Canceled += OnMovementCanceled;
@@ -51,6 +55,10 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser.State {
 		}
 
 		public void OnDisable() {
+			_rotationMovement.Disable();
+			_towardsMovement.Disable();
+			_forwardMovement.Disable();
+
 			_rotationMovement.Completed -= OnRotationMovementCompleted;
 			_towardsMovement.Completed -= OnTowardsMovementCompleted;
 			_towardsMovement.Canceled -= OnMovementCanceled;
@@ -58,6 +66,14 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser.State {
 			_forwardMovement.Canceled -= OnMovementCanceled;
 
 			_searchTimer.Completed -= OnSearchTimerCompleted;
+		}
+
+		public void Update(bool grounded) {
+			_rotationMovement.Update(grounded);
+			_towardsMovement.Update(grounded);
+			_forwardMovement.Update(grounded);
+
+			_searchTimer.Update();
 		}
 
 		public void Start() {
@@ -71,14 +87,6 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser.State {
 			_forwardMovement.Deactivate();
 
 			_searchTimer.Stop();
-		}
-
-		public void Update(bool grounded) {
-			_rotationMovement.Update(grounded);
-			_towardsMovement.Update(grounded);
-			_forwardMovement.Update(grounded);
-
-			_searchTimer.Update();
 		}
 
 		private void OnRotationMovementCompleted() {
