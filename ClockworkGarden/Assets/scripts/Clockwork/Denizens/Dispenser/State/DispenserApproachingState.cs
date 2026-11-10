@@ -3,7 +3,7 @@ using Assets.Scripts.Utils;
 using System;
 using UnityEngine;
 
-namespace Assets.scripts.Clockwork.Denizens.Dispenser.State {
+namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 	public class DispenserApproachingState : IDispenserState {
 		public event Action Completed;
 		public event Action Failed;
@@ -15,6 +15,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser.State {
 		private DispenserTowardsMovement _towardsMovement;
 
 		private Transform _targetTransform;
+		private bool _isMoving = false;
 
 		public DispenserApproachingState(ClockworkPartPropulsionController propulsionControl, Transform transform) {
 			_transform = transform;
@@ -52,21 +53,28 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser.State {
 		}
 
 		public void Start() {
+			if (_isMoving)
+				return;
+
 			if (_targetTransform == null) {
 				Failed?.Invoke();
 				return;
 			}
 
+			_isMoving = true;
 			_rotationMovement.Activate(Tools.GetLookAtRotation(_transform.position, _targetTransform.position, true));
 		}
 
 		public void Stop() {
+			_isMoving = false;
+
 			_rotationMovement.Deactivate();
 			_towardsMovement.Deactivate();
 		}
 
 		private void OnRotationMovementCompleted() {
 			if (_targetTransform == null) {
+				_isMoving = false;
 				Failed?.Invoke();
 				return;
 			}
@@ -76,6 +84,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser.State {
 
 		private void OnTowardsMovementCompleted() {
 			if (_targetTransform == null) {
+				_isMoving = false;
 				Failed?.Invoke();
 				return;
 			}
@@ -84,6 +93,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser.State {
 		}
 
 		private void OnMovementCanceled() {
+			Stop();
 			Lost?.Invoke();
 		}
 	}

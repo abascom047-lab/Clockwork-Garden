@@ -102,6 +102,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser.State {
 		}
 
 		private void OnMovementCanceled() {
+			Stop();
 			Lost?.Invoke();
 		}
 
