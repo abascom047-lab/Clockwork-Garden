@@ -26,7 +26,6 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		private DispenserForwardMovement _forwardMovement;
 		private DispenserShooting _shooting;
 
-		private Timer _searchTimer;
 		private DispenserState _state = DispenserState.Idle;
 		private DispenserState _lastState = DispenserState.Idle;
 		private Vector3 _center = Vector3.zero;
@@ -38,8 +37,6 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			_towardsMovement = new DispenserTowardsMovement(PropulsionControl, transform);
 			_forwardMovement = new DispenserForwardMovement(PropulsionControl, transform);
 			_shooting = new DispenserShooting(ItemContainerControl, HingeControl, LauncherControl);
-
-			_searchTimer = new Timer(0.5f);
 
 			_center = transform.position;
 		}
@@ -63,8 +60,6 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			_forwardMovement.Completed += OnForwardMovementCompleted;
 			_forwardMovement.Canceled += OnMovementCanceled;
 			_shooting.Completed += OnShootingCompleted;
-
-			_searchTimer.Completed += OnSearchTimerCompleted;
 		}
 
 		void OnDisable() {
@@ -82,16 +77,12 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			_forwardMovement.Completed -= OnForwardMovementCompleted;
 			_forwardMovement.Canceled -= OnMovementCanceled;
 			_shooting.Completed -= OnShootingCompleted;
-
-			_searchTimer.Completed -= OnSearchTimerCompleted;
 		}
 
 		void Update() {
 			_rotationMovement.Update(_grounded);
 			_towardsMovement.Update(_grounded);
 			_forwardMovement.Update(_grounded);
-
-			_searchTimer.Update();
 		}
 
 		private void SetState(DispenserState newState) {
@@ -117,9 +108,6 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		private void StartIdle() {
 			DeactivateMovers();
 			SetState(DispenserState.Idle);
-
-			_searchTimer.Reset(true);
-			_rotationMovement.Activate(Tools.GetLookAtRotation(transform.position, _center, true));
 		}
 
 		private void StartApproaching() {
@@ -207,31 +195,11 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			if (_state != DispenserState.Lost)
 				SetState(DispenserState.Lost);
 
-			_searchTimer.Stop();
 			_rotationMovement.Activate(Quaternion.LookRotation(transform.right));
 		}
 
 		private void OnShootingCompleted() {
 			StartIdle();
-		}
-
-		private void OnSearchTimerCompleted() {
-			List<InteractablePlantingSpotController> possibleTargetsList = DetectorControl.GetAll<InteractablePlantingSpotController>();
-			if (possibleTargetsList.Count == 0) {
-				_searchTimer.Start();
-				return;
-			}
-
-			foreach (InteractablePlantingSpotController target in possibleTargetsList) {
-				if (!target.Planted) {
-					_targetPlantingControl = target;
-					_searchTimer.Stop();
-					StartApproaching();
-					return;
-				}
-			}
-
-			_searchTimer.Start();
 		}
 	}
 }
