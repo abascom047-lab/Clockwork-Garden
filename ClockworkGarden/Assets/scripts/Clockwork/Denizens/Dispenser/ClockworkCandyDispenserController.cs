@@ -14,7 +14,8 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 
 		private Vector3 _center = Vector3.zero;
 		private InteractablePlantingSpotController _targetPlantingControl;
-		private IDispenserState _previousState;
+		private IDispenserState _previousState = null;
+		private IDispenserState _nextState = null;
 		private bool _grounded = true;
 
 		private DispenserIdleState _idleState;
@@ -32,7 +33,7 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		}
 
 		void Start() {
-			_idleState.Start();
+			_nextState = _idleState;
 		}
 
 		void OnEnable() {
@@ -74,6 +75,13 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		}
 
 		void Update() {
+			if (_nextState != null) {
+				_nextState.Start();
+				_nextState = null;
+
+				return;
+			}
+
 			_idleState.Update(_grounded);
 			_approachingState.Update(_grounded);
 			_lostState.Update(_grounded);
@@ -93,39 +101,40 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		private void OnIdleStateTargetFound(InteractablePlantingSpotController target) {
 			_targetPlantingControl = target;
 			_idleState.Stop();
-			_approachingState.Start(_targetPlantingControl.transform);
+			_approachingState.SetTargetTransform(_targetPlantingControl.transform);
+			_nextState = _approachingState;
 		}
 
 		private void OnApproachingStateCompleted() {
 			_approachingState.Stop();
-			_plantingState.Start();
+			_nextState = _plantingState;
 		}
 
 		private void OnApproachingStateFailed() {
 			_approachingState.Stop();
-			_idleState.Start();
+			_nextState = _idleState;
 		}
 
 		private void OnStateLost(IDispenserState lostState) {
 			_previousState = lostState;
-			_lostState.Start();
+			_nextState = _lostState;
 		}
 
 		private void OnLostStateCompleted() {
 			_lostState.Stop();
-			_previousState.Start();
+			_nextState = _previousState;
 		}
 
 		private void OnPlantingStateCompleted() {
 			_plantingState.Stop();
 			_targetPlantingControl = null;
-			_idleState.Start();
+			_nextState = _idleState;
 		}
 
 		private void OnPlantingStateFailed() {
 			_plantingState.Stop();
 			_targetPlantingControl = null;
-			_idleState.Start();
+			_nextState = _idleState;
 		}
 	}
 }

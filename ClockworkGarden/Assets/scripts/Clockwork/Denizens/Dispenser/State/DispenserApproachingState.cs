@@ -47,11 +47,6 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			_towardsMovement.Update(grounded);
 		}
 
-		public void Start(Transform targetTransform) {
-			_targetTransform = targetTransform;
-			Start();
-		}
-
 		public void Start() {
 			if (_isMoving)
 				return;
@@ -70,6 +65,10 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 
 			_rotationMovement.Deactivate();
 			_towardsMovement.Deactivate();
+		}
+
+		public void SetTargetTransform(Transform newTarget) {
+			_targetTransform = newTarget;
 		}
 
 		private void OnRotationMovementCompleted() {
