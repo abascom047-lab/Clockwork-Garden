@@ -1,18 +1,9 @@
 ﻿using Assets.scripts.Clockwork.Parts;
 using Assets.scripts.Interactables;
 using Assets.scripts.Miscellaneous;
-using Assets.Scripts.Utils;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.scripts.Clockwork.Denizens.Dispenser {
-	public enum DispenserState {
-		Idle,
-		Approaching,
-		Lost,
-		Planting
-	}
-
 	public class ClockworkCandyDispenserController : MonoBehaviour {
 		public ClockworkPartHingeController HingeControl;
 		public ClockworkPartItemContainerController ItemContainerControl;
@@ -21,133 +12,81 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 		public ClockworkPartDetectorController DetectorControl;
 		public GravityController GravityControl;
 
-		private DispenserRotationMovement _rotationMovement;
-		private DispenserTowardsMovement _towardsMovement;
-		private DispenserForwardMovement _forwardMovement;
-		private DispenserShooting _shooting;
-
-		private Timer _searchTimer;
-		private DispenserState _state = DispenserState.Idle;
-		private DispenserState _lastState = DispenserState.Idle;
 		private Vector3 _center = Vector3.zero;
 		private InteractablePlantingSpotController _targetPlantingControl;
+		private IDispenserState _previousState = null;
+		private IDispenserState _nextState = null;
 		private bool _grounded = true;
 
+		private DispenserIdleState _idleState;
+		private DispenserApproachingState _approachingState;
+		private DispenserLostState _lostState;
+		private DispenserPlantingState _plantingState;
+
 		void Awake() {
-			_rotationMovement = new DispenserRotationMovement(PropulsionControl, transform);
-			_towardsMovement = new DispenserTowardsMovement(PropulsionControl, transform);
-			_forwardMovement = new DispenserForwardMovement(PropulsionControl, transform);
-			_shooting = new DispenserShooting(ItemContainerControl, HingeControl, LauncherControl);
-
-			_searchTimer = new Timer(0.5f);
-
 			_center = transform.position;
+
+			_idleState = new DispenserIdleState(DetectorControl, PropulsionControl, transform, _center);
+			_approachingState = new DispenserApproachingState(PropulsionControl, transform);
+			_lostState = new DispenserLostState(PropulsionControl, transform);
+			_plantingState = new DispenserPlantingState(ItemContainerControl, HingeControl, LauncherControl);
 		}
 
 		void Start() {
-			StartIdle();
+			_nextState = _idleState;
 		}
 
 		void OnEnable() {
 			PropulsionControl.Activated += OnPropulsionControlActivated;
 			GravityControl.Grounded += OnGravityControlGrounded;
 
-			_rotationMovement.Enable();
-			_towardsMovement.Enable();
-			_forwardMovement.Enable();
-			_shooting.Enable();
+			_idleState.Enable();
+			_approachingState.Enable();
+			_lostState.Enable();
+			_plantingState.Enable();
 
-			_rotationMovement.Completed += OnRotationMovementCompleted;
-			_towardsMovement.Completed += OnTowardsMovementCompleted;
-			_towardsMovement.Canceled += OnMovementCanceled;
-			_forwardMovement.Completed += OnForwardMovementCompleted;
-			_forwardMovement.Canceled += OnMovementCanceled;
-			_shooting.Completed += OnShootingCompleted;
-
-			_searchTimer.Completed += OnSearchTimerCompleted;
+			_idleState.TargetFound += OnIdleStateTargetFound;
+			_idleState.Lost += OnStateLost;
+			_approachingState.Completed += OnApproachingStateCompleted;
+			_approachingState.Failed += OnApproachingStateFailed;
+			_approachingState.Lost += OnStateLost;
+			_lostState.Completed += OnLostStateCompleted;
+			_plantingState.Completed += OnPlantingStateCompleted;
+			_plantingState.Failed += OnPlantingStateFailed;
 		}
 
 		void OnDisable() {
 			PropulsionControl.Activated -= OnPropulsionControlActivated;
 			GravityControl.Grounded -= OnGravityControlGrounded;
 
-			_rotationMovement.Disable();
-			_towardsMovement.Disable();
-			_forwardMovement.Disable();
-			_shooting.Disable();
+			_idleState.Disable();
+			_approachingState.Disable();
+			_lostState.Disable();
+			_plantingState.Disable();
 
-			_rotationMovement.Completed -= OnRotationMovementCompleted;
-			_towardsMovement.Completed -= OnTowardsMovementCompleted;
-			_towardsMovement.Canceled -= OnMovementCanceled;
-			_forwardMovement.Completed -= OnForwardMovementCompleted;
-			_forwardMovement.Canceled -= OnMovementCanceled;
-			_shooting.Completed -= OnShootingCompleted;
-
-			_searchTimer.Completed -= OnSearchTimerCompleted;
+			_idleState.TargetFound -= OnIdleStateTargetFound;
+			_idleState.Lost -= OnStateLost;
+			_approachingState.Completed -= OnApproachingStateCompleted;
+			_approachingState.Failed -= OnApproachingStateFailed;
+			_approachingState.Lost -= OnStateLost;
+			_lostState.Completed -= OnLostStateCompleted;
+			_plantingState.Completed -= OnPlantingStateCompleted;
+			_plantingState.Failed -= OnPlantingStateFailed;
 		}
 
 		void Update() {
-			_rotationMovement.Update(_grounded);
-			_towardsMovement.Update(_grounded);
-			_forwardMovement.Update(_grounded);
+			if (_nextState != null) {
+				IDispenserState nextState = _nextState;
+				_nextState = null;
+				nextState.Start();
 
-			_searchTimer.Update();
-		}
-
-		private void SetState(DispenserState newState) {
-			_lastState = _state;
-			_state = newState;
-		}
-
-		private void RevertState() {
-			DeactivateMovers();
-
-			switch (_lastState) {
-				case DispenserState.Idle: {
-						StartIdle();
-						break;
-					}
-				case DispenserState.Approaching: {
-						StartApproaching();
-						break;
-					}
-			}
-		}
-
-		private void StartIdle() {
-			DeactivateMovers();
-			SetState(DispenserState.Idle);
-
-			_searchTimer.Reset(true);
-			_rotationMovement.Activate(Tools.GetLookAtRotation(transform.position, _center, true));
-		}
-
-		private void StartApproaching() {
-			if (_targetPlantingControl == null) {
-				StartIdle();
 				return;
 			}
 
-			DeactivateMovers();
-			SetState(DispenserState.Approaching);
-			_rotationMovement.Activate(Tools.GetLookAtRotation(transform.position, _targetPlantingControl.transform.position, true));
-		}
-
-		private void StartPlanting() {
-			DeactivateMovers();
-
-			if (!_shooting.Activate()) {
-				StartIdle();
-				return;
-			}
-
-			SetState(DispenserState.Planting);
-		}
-
-		private void DeactivateMovers() {
-			_rotationMovement.Deactivate();
-			_towardsMovement.Deactivate();
-			_forwardMovement.Deactivate();
+			_idleState.Update(_grounded);
+			_approachingState.Update(_grounded);
+			_lostState.Update(_grounded);
+			_plantingState.Update(_grounded);
 		}
 
 		private void OnPropulsionControlActivated(Vector3 direction) {
@@ -160,78 +99,43 @@ namespace Assets.scripts.Clockwork.Denizens.Dispenser {
 			PropulsionControl.Deactivate(PropulsionEndReason.Cancelled);
 		}
 
-		private void OnRotationMovementCompleted() {
-			switch (_state) {
-				case DispenserState.Idle: {
-						_towardsMovement.Activate(_center, 0f);
-						break;
-					}
-				case DispenserState.Approaching: {
-						_towardsMovement.Activate(_targetPlantingControl.transform.position, 7.5f);
-						break;
-					}
-				case DispenserState.Lost: {
-						_forwardMovement.Activate(3);
-						break;
-					}
-			}
+		private void OnIdleStateTargetFound(InteractablePlantingSpotController target) {
+			_targetPlantingControl = target;
+			_idleState.Stop();
+			_approachingState.SetTargetTransform(_targetPlantingControl.transform);
+			_nextState = _approachingState;
 		}
 
-		private void OnTowardsMovementCompleted() {
-			switch (_state) {
-				case DispenserState.Idle: {
-						_forwardMovement.Activate(5);
-						break;
-					}
-				case DispenserState.Approaching: {
-						StartPlanting();
-						break;
-					}
-			}
+		private void OnApproachingStateCompleted() {
+			_approachingState.Stop();
+			_nextState = _plantingState;
 		}
 
-		private void OnForwardMovementCompleted() {
-			switch (_state) {
-				case DispenserState.Idle: {
-						_rotationMovement.Activate(Tools.GetLookAtRotation(transform.position, _center, true));
-						break;
-					}
-				case DispenserState.Lost: {
-						RevertState();
-						break;
-					}
-			}
+		private void OnApproachingStateFailed() {
+			_approachingState.Stop();
+			_nextState = _idleState;
 		}
 
-		private void OnMovementCanceled() {
-			if (_state != DispenserState.Lost)
-				SetState(DispenserState.Lost);
-
-			_searchTimer.Stop();
-			_rotationMovement.Activate(Quaternion.LookRotation(transform.right));
+		private void OnStateLost(IDispenserState lostState) {
+			_previousState = lostState;
+			_nextState = _lostState;
 		}
 
-		private void OnShootingCompleted() {
-			StartIdle();
+		private void OnLostStateCompleted() {
+			_lostState.Stop();
+			_nextState = _previousState;
 		}
 
-		private void OnSearchTimerCompleted() {
-			List<InteractablePlantingSpotController> possibleTargetsList = DetectorControl.GetAll<InteractablePlantingSpotController>();
-			if (possibleTargetsList.Count == 0) {
-				_searchTimer.Start();
-				return;
-			}
+		private void OnPlantingStateCompleted() {
+			_plantingState.Stop();
+			_targetPlantingControl = null;
+			_nextState = _idleState;
+		}
 
-			foreach (InteractablePlantingSpotController target in possibleTargetsList) {
-				if (!target.Planted) {
-					_targetPlantingControl = target;
-					_searchTimer.Stop();
-					StartApproaching();
-					return;
-				}
-			}
-
-			_searchTimer.Start();
+		private void OnPlantingStateFailed() {
+			_plantingState.Stop();
+			_targetPlantingControl = null;
+			_nextState = _idleState;
 		}
 	}
 }
