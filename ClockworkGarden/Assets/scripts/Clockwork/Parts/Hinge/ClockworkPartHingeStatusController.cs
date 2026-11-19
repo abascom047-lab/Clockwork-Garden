@@ -9,6 +9,7 @@ namespace Assets.scripts.Clockwork.Parts.Hinge {
 
 		void Awake() {
 			_stickyControl = gameObject.AddComponent<ManyThresholdStatusController>();
+			_stickyControl.Type = StatusType.Sticky;
 			_stickyControl.Thresholds = new int[11] { 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
 		}
 

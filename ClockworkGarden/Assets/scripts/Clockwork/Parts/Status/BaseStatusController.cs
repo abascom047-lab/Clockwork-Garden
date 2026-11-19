@@ -15,7 +15,7 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 		public int CurrentValue = 0;
 
 		public void Add(StatusType addType, int addValue) {
-			if (addType == StatusType.None)
+			if (addType == Type)
 				CurrentValue += addValue;
 		}
 	}
