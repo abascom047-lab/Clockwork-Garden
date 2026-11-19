@@ -1622,6 +1622,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1652558614}
   - component: {fileID: 1652558615}
+  - component: {fileID: 1652558616}
   m_Layer: 0
   m_Name: Hinge
   m_TagString: Untagged
@@ -1661,6 +1662,19 @@ MonoBehaviour:
   MaxRotation: {x: 0, y: 0, z: 0}
   Speed: 100
   Reverse: 1
+--- !u!114 &1652558616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1652558613}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d127b6cf8d7aeb4da2f86df64bec621, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.scripts.Clockwork.Parts.Hinge.ClockworkPartHingeStatusController
+  HingeControl: {fileID: 1652558615}
 --- !u!1 &1991724952
 GameObject:
   m_ObjectHideFlags: 0
