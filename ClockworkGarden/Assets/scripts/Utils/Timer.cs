@@ -62,5 +62,9 @@ namespace Assets.Scripts.Utils {
             CurrentTime = 0.0f;
             Active = start;
         }
+
+		public override string ToString() {
+            return $"Timer [ max time: {maxTime}; loop: {Loop}; active: {Active} ]";
+		}
     }
 }

@@ -30,6 +30,7 @@ namespace Assets.scripts.Clockwork.Parts {
 		public bool IsClosed => _state == ClockworkHingeState.Close;
 
 		private ClockworkHingeState _state = ClockworkHingeState.Close;
+		private ClockworkHingeError _currentError = ClockworkHingeError.None;
 		private Vector3 _currentRotation = Vector3.zero;
 		private float _openSpeed;
 		private float _closeSpeed;
@@ -95,11 +96,13 @@ namespace Assets.scripts.Clockwork.Parts {
 
 		private void UpdateOpening() {
 			if (_openSpeed == 0f) {
-				Failure?.Invoke(ClockworkHingeError.CantOpen);
+				SendFailure(ClockworkHingeError.CantOpen);
 				return;
+			} else {
+				ClearFailure(ClockworkHingeError.CantOpen);
 			}
 
-			Vector3 targetRotation = Reverse ? MinRotation : MaxRotation;
+				Vector3 targetRotation = Reverse ? MinRotation : MaxRotation;
 
 			UpdateRotation(targetRotation, _openSpeed);
 			IfAtTargetRotation(targetRotation, ClockworkHingeState.Open, Opened);
@@ -107,11 +110,13 @@ namespace Assets.scripts.Clockwork.Parts {
 
 		private void UpdateClosing() {
 			if (_closeSpeed == 0f) {
-				Failure?.Invoke(ClockworkHingeError.CantClose);
+				SendFailure(ClockworkHingeError.CantClose);
 				return;
+			} else {
+				ClearFailure(ClockworkHingeError.CantClose);
 			}
 
-			Vector3 targetRotation = Reverse ? MaxRotation : MinRotation;
+				Vector3 targetRotation = Reverse ? MaxRotation : MinRotation;
 
 			UpdateRotation(targetRotation, _closeSpeed);
 			IfAtTargetRotation(targetRotation, ClockworkHingeState.Close, Closed);
@@ -142,6 +147,18 @@ namespace Assets.scripts.Clockwork.Parts {
 			Quaternion destination = Quaternion.Euler(target);
 
 			return Quaternion.Angle(current, destination) <= ROTATION_TOLERANCE;
+		}
+
+		private void SendFailure(ClockworkHingeError error) {
+			if (error == ClockworkHingeError.None) {
+				_currentError = error;
+				Failure?.Invoke(error);
+			}
+		}
+
+		private void ClearFailure(ClockworkHingeError error) {
+			if (_currentError == error)
+				_currentError = ClockworkHingeError.None;
 		}
 	}
 }

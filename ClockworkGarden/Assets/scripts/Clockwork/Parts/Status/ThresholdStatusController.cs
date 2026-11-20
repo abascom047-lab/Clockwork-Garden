@@ -16,7 +16,7 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 
 		private ThresholdState _currentState = ThresholdState.None;
 
-		void Update() {
+		protected override void OnUpdate() {
 			if (CurrentValue >= MaxThreshold && _currentState != ThresholdState.Over) {
 				_currentState = ThresholdState.Over;
 				ThresholdExceeded?.Invoke(ThresholdState.Over);

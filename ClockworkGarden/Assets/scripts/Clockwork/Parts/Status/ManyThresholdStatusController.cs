@@ -1,6 +1,4 @@
 ﻿using System;
-using UnityEditor.Rendering;
-using UnityEngine;
 
 namespace Assets.scripts.Clockwork.Parts.Status {
 	public class ManyThresholdStatusController : BaseStatusController {
@@ -11,12 +9,12 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 
 		private int _currentThreshold = 0;
 
-		void Update() {
+		protected override void OnUpdate() {
 			if (Thresholds.Length == 0)
 				return;
 
 			if (CurrentValue > Thresholds[_currentThreshold]) {
-				for (int i = _currentThreshold + 1; i < Thresholds.Length; i++) {
+				for (int i = Thresholds.Length - 1; i > _currentThreshold; i--) {
 					if (IfPassedThreshold(Thresholds[i], Reverse)) {
 						ThresholdPassed?.Invoke(i);
 						_currentThreshold = i;
@@ -25,7 +23,7 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 					}
 				}
 			} else if (CurrentValue < Thresholds[_currentThreshold]) {
-				for (int i = _currentThreshold - 1; i >= 0; i--) {
+				for (int i = 0; i < _currentThreshold; i++) {
 					if (IfPassedThreshold(Thresholds[i], !Reverse)) {
 						ThresholdPassed?.Invoke(i);
 						_currentThreshold = i;
