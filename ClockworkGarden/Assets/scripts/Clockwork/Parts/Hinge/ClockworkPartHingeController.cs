@@ -150,7 +150,7 @@ namespace Assets.scripts.Clockwork.Parts {
 		}
 
 		private void SendFailure(ClockworkHingeError error) {
-			if (error == ClockworkHingeError.None) {
+			if (_currentError == ClockworkHingeError.None) {
 				_currentError = error;
 				Failure?.Invoke(error);
 			}
