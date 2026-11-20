@@ -23,7 +23,7 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 					}
 				}
 			} else if (CurrentValue < Thresholds[_currentThreshold]) {
-				for (int i = 0; i < _currentThreshold; i++) {
+				for (int i = _currentThreshold - 1; i >= 0; i--) {
 					if (IfPassedThreshold(Thresholds[i], !Reverse)) {
 						ThresholdPassed?.Invoke(i);
 						_currentThreshold = i;
