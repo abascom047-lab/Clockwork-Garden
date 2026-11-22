@@ -109,12 +109,12 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 			if (index > 1 || index < 0)
 				return;
 
-			if (index == 1) {
-				_openSpeed = newSpeed;
+			if (index == 0) {
+				_openSpeed = Mathf.Clamp(newSpeed, 0f, Speed);
 				return;
 			}
 
-			_closeSpeed = newSpeed;
+			_closeSpeed = Mathf.Clamp(newSpeed, 0f, Speed);
 		}
 
 		public void ResetSpeedByIndex(int index) {
@@ -125,7 +125,7 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 			if (index > 1 || index < 0)
 				return 0f;
 
-			if (index == 1)
+			if (index == 0)
 				return _openSpeed;
 
 			return _closeSpeed;

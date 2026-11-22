@@ -18,7 +18,7 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 				float speedIncrement = baseSpeed / (Thresholds.Length - 1);
 				float newSpeed = baseSpeed - speedIncrement * index;
 
-				partSpeed.SetSpeedByIndex(1, newSpeed);
+				partSpeed.SetSpeedByIndex(0, newSpeed);
 			}
 
 			base.ThresholdPassed(index);
