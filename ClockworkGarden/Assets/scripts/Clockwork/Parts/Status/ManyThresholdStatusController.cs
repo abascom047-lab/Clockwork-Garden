@@ -1,11 +1,7 @@
-﻿using System;
-
-namespace Assets.scripts.Clockwork.Parts.Status {
+﻿namespace Assets.scripts.Clockwork.Parts.Status {
 	public class ManyThresholdStatusController : BaseStatusController {
 		public int[] Thresholds;
 		public bool Reverse = false;
-
-		public event Action<int> ThresholdPassed;
 
 		private int _currentThreshold = 0;
 
@@ -16,7 +12,7 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 			if (CurrentValue > Thresholds[_currentThreshold]) {
 				for (int i = Thresholds.Length - 1; i > _currentThreshold; i--) {
 					if (IfPassedThreshold(Thresholds[i], Reverse)) {
-						ThresholdPassed?.Invoke(i);
+						ThresholdPassed(i);
 						_currentThreshold = i;
 
 						return;
@@ -25,7 +21,7 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 			} else if (CurrentValue < Thresholds[_currentThreshold]) {
 				for (int i = _currentThreshold - 1; i >= 0; i--) {
 					if (IfPassedThreshold(Thresholds[i], !Reverse)) {
-						ThresholdPassed?.Invoke(i);
+						ThresholdPassed(i);
 						_currentThreshold = i;
 
 						return;
@@ -33,6 +29,8 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 				}
 			}
 		}
+
+		protected virtual void ThresholdPassed(int index) { }
 
 		private bool IfPassedThreshold(int threshold, bool reverse) {
 			if (reverse && CurrentValue <= threshold)

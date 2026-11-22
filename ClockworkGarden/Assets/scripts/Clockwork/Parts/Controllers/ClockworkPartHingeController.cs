@@ -1,8 +1,9 @@
-﻿using Assets.Scripts.Utils;
+﻿using Assets.scripts.Clockwork.Parts.Interfaces;
+using Assets.Scripts.Utils;
 using System;
 using UnityEngine;
 
-namespace Assets.scripts.Clockwork.Parts {
+namespace Assets.scripts.Clockwork.Parts.Controllers {
 	public enum ClockworkHingeState {
 		Open,
 		Close,
@@ -16,7 +17,7 @@ namespace Assets.scripts.Clockwork.Parts {
 		CantClose
 	}
 
-	public class ClockworkPartHingeController : MonoBehaviour {
+	public class ClockworkPartHingeController : MonoBehaviour, IPartControllableSpeed {
 		public Vector3 MinRotation = Vector3.zero;
 		public Vector3 MaxRotation = Vector3.zero;
 		public float Speed = 100.0f;
@@ -78,21 +79,59 @@ namespace Assets.scripts.Clockwork.Parts {
 			_state = ClockworkHingeState.Closing;
 		}
 
-		public void SetOpenSpeed(float newValue) {
-			_openSpeed = Mathf.Clamp(newValue, 0f, Speed);
+
+		#region // IPartControllableSpeed Methods
+		public float GetBaseSpeed() {
+			return Speed;
 		}
 
-		public void ResetOpenSpeed() {
-			SetOpenSpeed(Speed);
+		public void SetSpeed(float newSpeed) {
+			_openSpeed = Mathf.Clamp(newSpeed, 0f, Speed);
+			_closeSpeed = Mathf.Clamp(newSpeed, 0f, Speed);
 		}
 
-		public void SetCloseSpeed(float newValue) {
-			_closeSpeed = Mathf.Clamp(newValue, 0f, Speed);
+		public void ResetSpeed() {
+			SetSpeed(Speed);
 		}
 
-		public void ResetCloseSpeed() {
-			SetCloseSpeed(Speed);
+		public float GetSpeed() {
+			return _openSpeed;
 		}
+
+		public float GetBaseSpeedByIndex(int index) {
+			if (index > 1 || index < 0)
+				return 0f;
+
+			return Speed;
+		}
+
+		public void SetSpeedByIndex(int index, float newSpeed) {
+			if (index > 1 || index < 0)
+				return;
+
+			if (index == 1) {
+				_openSpeed = newSpeed;
+				return;
+			}
+
+			_closeSpeed = newSpeed;
+		}
+
+		public void ResetSpeedByIndex(int index) {
+			SetSpeedByIndex(index, Speed);
+		}
+
+		public float GetSpeedByIndex(int index) {
+			if (index > 1 || index < 0)
+				return 0f;
+
+			if (index == 1)
+				return _openSpeed;
+
+			return _closeSpeed;
+		}
+		#endregion
+
 
 		private void UpdateOpening() {
 			if (_openSpeed == 0f) {

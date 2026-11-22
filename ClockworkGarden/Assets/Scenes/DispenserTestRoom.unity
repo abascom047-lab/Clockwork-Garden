@@ -1511,7 +1511,6 @@ GameObject:
   - component: {fileID: 1652558614}
   - component: {fileID: 1652558615}
   - component: {fileID: 1652558616}
-  - component: {fileID: 1652558617}
   m_Layer: 0
   m_Name: Hinge
   m_TagString: Untagged
@@ -1560,28 +1559,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1652558613}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d127b6cf8d7aeb4da2f86df64bec621, type: 3}
+  m_Script: {fileID: 11500000, guid: 095b84748dd1b0845a255d38eaf3d749, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Assets.scripts.Clockwork.Parts.Hinge.ClockworkPartHingeStatusController
-  HingeControl: {fileID: 1652558615}
-  StatusControls:
-  - {fileID: 1652558617}
---- !u!114 &1652558617
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1652558613}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a0e45fe46aca76b44bdd3faa9e385589, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Assets.scripts.Clockwork.Parts.Status.ManyThresholdStatusController
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.scripts.Clockwork.Parts.Status.StickyStatusController
   Type: 4
   CurrentValue: 0
   StartValue: 0
-  DecaySpeed: 10
+  DecaySpeed: 0.2
   Thresholds: 000000000a000000140000001e00000028000000320000003c00000046000000500000005a00000064000000
   Reverse: 0
 --- !u!1 &1991724952

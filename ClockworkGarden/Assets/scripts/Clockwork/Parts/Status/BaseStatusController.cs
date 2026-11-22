@@ -17,6 +17,10 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 		public float StartValue = 0f;
 		public float DecaySpeed = 0f;
 
+		void Start() {
+			OnStart();
+		}
+
 		void Update() {
 			if (DecaySpeed > 0)
 				CurrentValue = Mathf.MoveTowards(CurrentValue, StartValue, DecaySpeed * GameTime.Current);
@@ -29,6 +33,7 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 				CurrentValue += addValue;
 		}
 
+		protected virtual void OnStart() { }
 		protected virtual void OnUpdate() { }
 	}
 }

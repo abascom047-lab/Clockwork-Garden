@@ -1,4 +1,5 @@
 ﻿using Assets.scripts.Clockwork.Parts;
+using Assets.scripts.Clockwork.Parts.Controllers;
 using System;
 
 namespace Assets.scripts.Clockwork.Denizens.Dispenser {
