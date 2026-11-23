@@ -92,7 +92,7 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 
 		#region // IPartControllableSpeed Methods
 		public void SetSpeed(float newSpeed) {
-			CurrentSpeed = Mathf.Clamp(newSpeed, 0f, BaseSpeed);
+			CurrentSpeed = Mathf.Max(0, newSpeed);
 		}
 
 		public void ResetSpeed() {

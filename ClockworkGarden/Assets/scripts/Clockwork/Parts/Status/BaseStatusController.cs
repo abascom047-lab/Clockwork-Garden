@@ -12,10 +12,11 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 	}
 
 	public class BaseStatusController : MonoBehaviour {
-		public StatusType Type = StatusType.None; 
 		public float CurrentValue = 0f;
 		public float StartValue = 0f;
 		public float DecaySpeed = 0f;
+
+		protected StatusType _type = StatusType.None;
 
 		void Start() {
 			OnStart();
@@ -29,7 +30,7 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 		}
 
 		public void Add(StatusType addType, int addValue) {
-			if (addType == Type)
+			if (addType == _type)
 				CurrentValue += addValue;
 		}
 
