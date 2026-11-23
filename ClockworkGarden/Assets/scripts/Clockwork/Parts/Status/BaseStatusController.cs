@@ -4,6 +4,8 @@ using UnityEngine;
 namespace Assets.scripts.Clockwork.Parts.Status {
 	public enum StatusType {
 		None,
+		Physical,
+		Durability,
 		Magnetism,
 		Clocking,
 		Temperature,
@@ -29,7 +31,7 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 			OnUpdate();
 		}
 
-		public void Add(StatusType addType, int addValue) {
+		public virtual void Add(StatusType addType, float addValue) {
 			if (addType == _type)
 				CurrentValue += addValue;
 		}
