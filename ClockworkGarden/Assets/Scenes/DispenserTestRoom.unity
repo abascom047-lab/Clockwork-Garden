@@ -1548,7 +1548,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Assets.scripts.Clockwork.Parts.ClockworkHingeController
   MinRotation: {x: -45, y: 0, z: 0}
   MaxRotation: {x: 0, y: 0, z: 0}
-  Speed: 100
   Reverse: 1
 --- !u!114 &1652558616
 MonoBehaviour:
@@ -1563,7 +1562,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.scripts.Clockwork.Parts.Status.StickyStatusController
   Type: 4
-  CurrentValue: 0
+  CurrentValue: 100
   StartValue: 0
   DecaySpeed: 0.2
   Thresholds: 000000000a000000140000001e00000028000000320000003c00000046000000500000005a00000064000000

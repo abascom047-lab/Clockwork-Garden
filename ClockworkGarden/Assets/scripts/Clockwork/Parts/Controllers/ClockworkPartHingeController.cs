@@ -1,6 +1,9 @@
-﻿using Assets.scripts.Clockwork.Parts.Interfaces;
+﻿using Assets.scripts.Clockwork.Parts.Helpers;
+using Assets.scripts.Clockwork.Parts.Interfaces;
+using Assets.scripts.Clockwork.Parts.Status;
 using Assets.Scripts.Utils;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.scripts.Clockwork.Parts.Controllers {
@@ -17,10 +20,10 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 		CantClose
 	}
 
-	public class ClockworkPartHingeController : MonoBehaviour, IPartControllableSpeed {
+	public class ClockworkPartHingeController : MonoBehaviour, IPartModifiableSpeed {
 		public Vector3 MinRotation = Vector3.zero;
 		public Vector3 MaxRotation = Vector3.zero;
-		public float Speed = 100.0f;
+		public float Speed = 100f;
 		public bool Reverse = false;
 
 		public event Action Opened;
@@ -30,20 +33,27 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 		public bool IsOpen => _state == ClockworkHingeState.Open;
 		public bool IsClosed => _state == ClockworkHingeState.Close;
 
+		#region // IPartModifiableSpeed properties
+		public float BaseSpeed { get; set; }
+		public float CurrentSpeed { get; private set; }
+		public Dictionary<StatusType, float> SpeedModifiers { get; private set; }
+		#endregion
+
 		private ClockworkHingeState _state = ClockworkHingeState.Close;
 		private ClockworkHingeError _currentError = ClockworkHingeError.None;
+
 		private Vector3 _currentRotation = Vector3.zero;
-		private float _openSpeed;
-		private float _closeSpeed;
 
 		private const float MIN_ROTATION_ALLOWED = -360f;
 		private const float MAX_ROTATION_ALLOWED = 360f;
 		private const float ROTATION_TOLERANCE = 0.1f;
 
 		void Awake() {
+			SpeedModifiers = new Dictionary<StatusType, float>();
+			BaseSpeed = Speed;
+			CurrentSpeed = BaseSpeed;
+
 			_currentRotation = transform.localEulerAngles;
-			_openSpeed = Speed;
-			_closeSpeed = Speed;
 
 			if (MinRotation.x < MIN_ROTATION_ALLOWED || MinRotation.y < MIN_ROTATION_ALLOWED || MinRotation.z < MIN_ROTATION_ALLOWED)
 				Debug.LogError($"MinRotation too low: {MinRotation} Minimum Rotation: {MIN_ROTATION_ALLOWED}");
@@ -81,60 +91,28 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 
 
 		#region // IPartControllableSpeed Methods
-		public float GetBaseSpeed() {
-			return Speed;
-		}
-
 		public void SetSpeed(float newSpeed) {
-			_openSpeed = Mathf.Clamp(newSpeed, 0f, Speed);
-			_closeSpeed = Mathf.Clamp(newSpeed, 0f, Speed);
+			CurrentSpeed = Mathf.Clamp(newSpeed, 0f, BaseSpeed);
 		}
 
 		public void ResetSpeed() {
-			SetSpeed(Speed);
+			SetSpeed(BaseSpeed);
 		}
 
-		public float GetSpeed() {
-			return _openSpeed;
+		public void UpsertModifier(StatusType statusType, float multiplier) {
+			SpeedModifiers[statusType] = multiplier;
+			SpeedModifierHelper.ModifySpeed(this);
 		}
 
-		public float GetBaseSpeedByIndex(int index) {
-			if (index > 1 || index < 0)
-				return 0f;
-
-			return Speed;
-		}
-
-		public void SetSpeedByIndex(int index, float newSpeed) {
-			if (index > 1 || index < 0)
-				return;
-
-			if (index == 0) {
-				_openSpeed = Mathf.Clamp(newSpeed, 0f, Speed);
-				return;
-			}
-
-			_closeSpeed = Mathf.Clamp(newSpeed, 0f, Speed);
-		}
-
-		public void ResetSpeedByIndex(int index) {
-			SetSpeedByIndex(index, Speed);
-		}
-
-		public float GetSpeedByIndex(int index) {
-			if (index > 1 || index < 0)
-				return 0f;
-
-			if (index == 0)
-				return _openSpeed;
-
-			return _closeSpeed;
+		public void DeleteModifier(StatusType statusType) {
+			SpeedModifiers.Remove(statusType);
+			SpeedModifierHelper.ModifySpeed(this);
 		}
 		#endregion
 
 
 		private void UpdateOpening() {
-			if (_openSpeed == 0f) {
+			if (CurrentSpeed == 0f) {
 				SendFailure(ClockworkHingeError.CantOpen);
 				return;
 			} else {
@@ -143,12 +121,12 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 
 				Vector3 targetRotation = Reverse ? MinRotation : MaxRotation;
 
-			UpdateRotation(targetRotation, _openSpeed);
+			UpdateRotation(targetRotation, CurrentSpeed);
 			IfAtTargetRotation(targetRotation, ClockworkHingeState.Open, Opened);
 		}
 
 		private void UpdateClosing() {
-			if (_closeSpeed == 0f) {
+			if (CurrentSpeed == 0f) {
 				SendFailure(ClockworkHingeError.CantClose);
 				return;
 			} else {
@@ -157,7 +135,7 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 
 				Vector3 targetRotation = Reverse ? MaxRotation : MinRotation;
 
-			UpdateRotation(targetRotation, _closeSpeed);
+			UpdateRotation(targetRotation, CurrentSpeed);
 			IfAtTargetRotation(targetRotation, ClockworkHingeState.Close, Closed);
 		}
 

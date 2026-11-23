@@ -1,24 +1,27 @@
 ﻿using Assets.scripts.Clockwork.Parts.Interfaces;
+using UnityEngine;
 
 namespace Assets.scripts.Clockwork.Parts.Status {
 	public class StickyStatusController : ManyThresholdStatusController {
-		private IPartControllableSpeed partSpeed;
+		private IPartModifiableSpeed partSpeed;
 
 		protected override void OnStart() {
 			Type = StatusType.Sticky;
 			Reverse = false;
-			partSpeed = GetComponent<IPartControllableSpeed>();
+			partSpeed = GetComponent<IPartModifiableSpeed>();
 
 			base.OnStart();
 		}
 
 		protected override void ThresholdPassed(int index) {
 			if (partSpeed != null) {
-				float baseSpeed = partSpeed.GetBaseSpeedByIndex(1);
-				float speedIncrement = baseSpeed / (Thresholds.Length - 1);
-				float newSpeed = baseSpeed - speedIncrement * index;
+				float multiplier = 1f - index / (Thresholds.Length - 1f);
+				if (multiplier == 1) {
+					partSpeed.DeleteModifier(Type);
+					return;
+				}
 
-				partSpeed.SetSpeedByIndex(0, newSpeed);
+				partSpeed.UpsertModifier(Type, multiplier);
 			}
 
 			base.ThresholdPassed(index);
