@@ -1,31 +1,27 @@
-﻿using System;
-
-namespace Assets.scripts.Clockwork.Parts.Status {
+﻿namespace Assets.scripts.Clockwork.Parts.Status {
 	public class ManyThresholdStatusController : BaseStatusController {
-		public int[] Thresholds;
-		public bool Reverse = false;
-
-		public event Action<int> ThresholdPassed;
+		protected int[] _thresholds;
+		protected bool _reverse = false;
 
 		private int _currentThreshold = 0;
 
 		protected override void OnUpdate() {
-			if (Thresholds.Length == 0)
+			if (_thresholds.Length == 0)
 				return;
 
-			if (CurrentValue > Thresholds[_currentThreshold]) {
-				for (int i = Thresholds.Length - 1; i > _currentThreshold; i--) {
-					if (IfPassedThreshold(Thresholds[i], Reverse)) {
-						ThresholdPassed?.Invoke(i);
+			if (CurrentValue > _thresholds[_currentThreshold]) {
+				for (int i = _thresholds.Length - 1; i > _currentThreshold; i--) {
+					if (IfPassedThreshold(_thresholds[i], _reverse)) {
+						ThresholdPassed(i);
 						_currentThreshold = i;
 
 						return;
 					}
 				}
-			} else if (CurrentValue < Thresholds[_currentThreshold]) {
+			} else if (CurrentValue < _thresholds[_currentThreshold]) {
 				for (int i = _currentThreshold - 1; i >= 0; i--) {
-					if (IfPassedThreshold(Thresholds[i], !Reverse)) {
-						ThresholdPassed?.Invoke(i);
+					if (IfPassedThreshold(_thresholds[i], !_reverse)) {
+						ThresholdPassed(i);
 						_currentThreshold = i;
 
 						return;
@@ -33,6 +29,8 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 				}
 			}
 		}
+
+		protected virtual void ThresholdPassed(int index) { }
 
 		private bool IfPassedThreshold(int threshold, bool reverse) {
 			if (reverse && CurrentValue <= threshold)
