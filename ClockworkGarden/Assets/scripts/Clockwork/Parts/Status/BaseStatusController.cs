@@ -36,6 +36,11 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 				CurrentValue += addValue;
 		}
 
+		public virtual void Set(StatusType setType, float newValue) {
+			if (setType == _type)
+				CurrentValue = newValue;
+		}
+
 		protected virtual void OnStart() { }
 		protected virtual void OnUpdate() { }
 	}

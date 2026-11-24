@@ -1510,7 +1510,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1652558614}
   - component: {fileID: 1652558615}
+  - component: {fileID: 1652558617}
   - component: {fileID: 1652558616}
+  - component: {fileID: 1652558618}
   m_Layer: 0
   m_Name: Hinge
   m_TagString: Untagged
@@ -1546,8 +1548,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18d7730a27ae9ab4a995fb6302e6ed43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.scripts.Clockwork.Parts.ClockworkHingeController
+  StatusControls:
+  - {fileID: 1652558617}
+  - {fileID: 1652558616}
   MinRotation: {x: -45, y: 0, z: 0}
   MaxRotation: {x: 0, y: 0, z: 0}
+  Speed: 100
   Reverse: 1
 --- !u!114 &1652558616
 MonoBehaviour:
@@ -1561,12 +1567,40 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 095b84748dd1b0845a255d38eaf3d749, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.scripts.Clockwork.Parts.Status.StickyStatusController
-  Type: 4
-  CurrentValue: 100
+  CurrentValue: 0
   StartValue: 0
   DecaySpeed: 0.2
-  Thresholds: 000000000a000000140000001e00000028000000320000003c00000046000000500000005a00000064000000
-  Reverse: 0
+--- !u!114 &1652558617
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1652558613}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 882e89e6e2dbcc545af15da30af7d3b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.scripts.Clockwork.Parts.Status.PhysicalStatusController
+  CurrentValue: 200
+  StartValue: 0
+  DecaySpeed: 0
+  MaxValue: 200
+--- !u!114 &1652558618
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1652558613}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9db4dde1eb827344bbf5dbb072187713, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.scripts.DebugControllers.DebugDamageController
+  Type: 0
+  Value: 0
+  Ready: 0
 --- !u!1 &1991724952
 GameObject:
   m_ObjectHideFlags: 0

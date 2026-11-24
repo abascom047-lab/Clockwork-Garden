@@ -20,7 +20,8 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 		CantClose
 	}
 
-	public class ClockworkPartHingeController : MonoBehaviour, IPartModifiableSpeed {
+	public class ClockworkPartHingeController : MonoBehaviour, IPartDamageable, IPartModifiableSpeed {
+		public BaseStatusController[] StatusControls;
 		public Vector3 MinRotation = Vector3.zero;
 		public Vector3 MaxRotation = Vector3.zero;
 		public float Speed = 100f;
@@ -88,6 +89,13 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 
 			_state = ClockworkHingeState.Closing;
 		}
+
+
+		#region // IPartDamageable Methods
+		public void AddDamage(StatusType statusType, float damage) {
+			DamageableHelpers.AddDamage(StatusControls, statusType, damage);
+		}
+		#endregion
 
 
 		#region // IPartControllableSpeed Methods
