@@ -1,44 +1,38 @@
-﻿using UnityEngine;
+﻿using Assets.scripts.Clockwork.Parts.Interfaces;
+using Assets.scripts.Clockwork.Parts.Status.Conditions;
+using UnityEngine;
 
 namespace Assets.scripts.Clockwork.Parts.Status {
-	public class DurabilityStatusController : BaseStatusController {
-		public const float MAX_VALUE = 100f;
-
-		public override void Add(StatusType addType, float addValue) {
-			base.Add(addType, addValue);
-			CurrentValue = Mathf.Clamp(CurrentValue, StartValue, MAX_VALUE);
-		}
-
-		public override void Set(StatusType setType, float newValue) {
-			base.Set(setType, newValue);
-			CurrentValue = Mathf.Clamp(CurrentValue, StartValue, MAX_VALUE);
-		}
-
-		protected override void OnStart() {
-			CurrentValue = MAX_VALUE;
-			_type = StatusType.Durability;
-
-			base.OnStart();
-		}
-	}
-
 	public class PhysicalStatusController : SingleThresholdStatusController {
+		public DurabilityStatusController DurabilityControl;
 		public float MaxValue = 100f;
 
-		private DurabilityStatusController _durabilityControl;
+		private IPartDamageable _damageableInterface;
+		private DisabledStatusCondition _disabledCondition;
 
 		public override void Add(StatusType addType, float addValue) {
 			if (addType != StatusType.Physical)
 				return;
 
-			addValue *= _durabilityControl.CurrentValue / DurabilityStatusController.MAX_VALUE;
+			float percentage = Mathf.Abs(addValue / MaxValue);
+			float durabilityChange = DurabilityStatusController.MAX_VALUE * percentage;
 
-			float percentage = addValue / MaxValue;
-			float lostDurability = DurabilityStatusController.MAX_VALUE * percentage;
-			_durabilityControl.Add(StatusType.Durability, lostDurability);
+			if (addValue > 0) {
+				if (CurrentValue >= MaxValue) {
+					DurabilityControl.Add(StatusType.Durability, durabilityChange);
+				}
+
+				base.Add(addType, addValue);
+				CurrentValue = Mathf.Min(CurrentValue, MaxValue);
+				
+				return;
+			}
+
+			addValue *= 1 - DurabilityControl.CurrentValue / DurabilityStatusController.MAX_VALUE;
 
 			base.Add(addType, addValue);
-			CurrentValue = Mathf.Clamp(CurrentValue, StartValue, MaxValue);
+			DurabilityControl.Add(StatusType.Durability, -durabilityChange);
+			CurrentValue = Mathf.Max(CurrentValue, StartValue);
 		}
 
 		public override void Set(StatusType setType, float newValue) {
@@ -47,19 +41,25 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 		}
 
 		protected override void OnStart() {
-			_durabilityControl = gameObject.AddComponent<DurabilityStatusController>();
-
 			StartValue = 0f;
 			CurrentValue = Mathf.Clamp(CurrentValue, StartValue, MaxValue);
 
 			_type = StatusType.Physical;
-			_threshold = 0;
+			_threshold = 1;
+
+			_damageableInterface = gameObject.GetComponent<IPartDamageable>();
+			_disabledCondition = new DisabledStatusCondition();
 
 			base.OnStart();
 		}
 
+		protected override void AboveThreshold() {
+			_damageableInterface.RemoveStatusCondition(_disabledCondition);
+			base.AboveThreshold();
+		}
+
 		protected override void BelowThreshold() {
-			// add status condition
+			_damageableInterface.AddStatusCondition(_disabledCondition);
 			base.BelowThreshold();
 		}
 	}

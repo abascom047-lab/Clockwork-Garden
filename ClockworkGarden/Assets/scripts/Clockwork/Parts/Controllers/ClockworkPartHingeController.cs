@@ -1,6 +1,7 @@
 ﻿using Assets.scripts.Clockwork.Parts.Helpers;
 using Assets.scripts.Clockwork.Parts.Interfaces;
 using Assets.scripts.Clockwork.Parts.Status;
+using Assets.scripts.Clockwork.Parts.Status.Conditions;
 using Assets.Scripts.Utils;
 using System;
 using System.Collections.Generic;
@@ -34,11 +35,17 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 		public bool IsOpen => _state == ClockworkHingeState.Open;
 		public bool IsClosed => _state == ClockworkHingeState.Close;
 
+
+		#region // IPartDamageable properties
+		public HashSet<IStatusCondition> StatusConditions { get; private set; }
+		#endregion
+
 		#region // IPartModifiableSpeed properties
 		public float BaseSpeed { get; set; }
 		public float CurrentSpeed { get; private set; }
 		public Dictionary<StatusType, float> SpeedModifiers { get; private set; }
 		#endregion
+
 
 		private ClockworkHingeState _state = ClockworkHingeState.Close;
 		private ClockworkHingeError _currentError = ClockworkHingeError.None;
@@ -50,9 +57,11 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 		private const float ROTATION_TOLERANCE = 0.1f;
 
 		void Awake() {
-			SpeedModifiers = new Dictionary<StatusType, float>();
+			StatusConditions = new HashSet<IStatusCondition>();
+
 			BaseSpeed = Speed;
 			CurrentSpeed = BaseSpeed;
+			SpeedModifiers = new Dictionary<StatusType, float>();
 
 			_currentRotation = transform.localEulerAngles;
 
@@ -95,6 +104,14 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 		public void AddDamage(StatusType statusType, float damage) {
 			DamageableHelpers.AddDamage(StatusControls, statusType, damage);
 		}
+
+		public void AddStatusCondition(IStatusCondition newCondition) {
+			StatusConditions.Add(newCondition);
+		}
+
+		public void RemoveStatusCondition(IStatusCondition oldCondition) {
+			StatusConditions.Remove(oldCondition);
+		}
 		#endregion
 
 
@@ -120,7 +137,8 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 
 
 		private void UpdateOpening() {
-			if (CurrentSpeed == 0f) {
+			float openSpeed = GetSpeed();
+			if (openSpeed == 0f) {
 				SendFailure(ClockworkHingeError.CantOpen);
 				return;
 			} else {
@@ -129,12 +147,13 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 
 				Vector3 targetRotation = Reverse ? MinRotation : MaxRotation;
 
-			UpdateRotation(targetRotation, CurrentSpeed);
+			UpdateRotation(targetRotation, openSpeed);
 			IfAtTargetRotation(targetRotation, ClockworkHingeState.Open, Opened);
 		}
 
 		private void UpdateClosing() {
-			if (CurrentSpeed == 0f) {
+			float closeSpeed = GetSpeed();
+			if (closeSpeed == 0f) {
 				SendFailure(ClockworkHingeError.CantClose);
 				return;
 			} else {
@@ -143,7 +162,7 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 
 				Vector3 targetRotation = Reverse ? MaxRotation : MinRotation;
 
-			UpdateRotation(targetRotation, CurrentSpeed);
+			UpdateRotation(targetRotation, closeSpeed);
 			IfAtTargetRotation(targetRotation, ClockworkHingeState.Close, Closed);
 		}
 
@@ -172,6 +191,15 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 			Quaternion destination = Quaternion.Euler(target);
 
 			return Quaternion.Angle(current, destination) <= ROTATION_TOLERANCE;
+		}
+
+		private float GetSpeed() {
+			if (DamageableHelpers.TryGetHighestPriorityCondition(StatusConditions, out IStatusCondition priorityCondition)) {
+				if (priorityCondition.TryGetSpeedModifier(out float modifier))
+					return Speed * modifier;
+			}
+
+			return CurrentSpeed;
 		}
 
 		private void SendFailure(ClockworkHingeError error) {
