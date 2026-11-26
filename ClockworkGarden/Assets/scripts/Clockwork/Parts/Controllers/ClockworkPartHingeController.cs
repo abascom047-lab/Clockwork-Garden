@@ -41,9 +41,12 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 		#endregion
 
 		#region // IPartModifiableSpeed properties
-		public float BaseSpeed { get; set; }
-		public float CurrentSpeed { get; private set; }
-		public Dictionary<StatusType, float> SpeedModifiers { get; private set; }
+		public float BasePrimarySpeed { get; private set; }
+		public float BaseSecondarySpeed { get; private set; }
+		public float CurrentPrimarySpeed { get; private set; }
+		public float CurrentSecondarySpeed { get; private set; }
+		public Dictionary<StatusType, float> PrimarySpeedModifiers { get; private set; }
+		public Dictionary<StatusType, float> SecondarySpeedModifiers { get; private set; }
 		#endregion
 
 
@@ -59,9 +62,12 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 		void Awake() {
 			StatusConditions = new HashSet<IStatusCondition>();
 
-			BaseSpeed = Speed;
-			CurrentSpeed = BaseSpeed;
-			SpeedModifiers = new Dictionary<StatusType, float>();
+			BasePrimarySpeed = Speed;
+			BaseSecondarySpeed = Speed;
+			CurrentPrimarySpeed = BasePrimarySpeed;
+			CurrentSecondarySpeed = BaseSecondarySpeed;
+			PrimarySpeedModifiers = new Dictionary<StatusType, float>();
+			SecondarySpeedModifiers = new Dictionary<StatusType, float>();
 
 			_currentRotation = transform.localEulerAngles;
 
@@ -117,27 +123,61 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 
 		#region // IPartControllableSpeed Methods
 		public void SetSpeed(float newSpeed) {
-			CurrentSpeed = Mathf.Max(0, newSpeed);
+			SetPrimarySpeed(newSpeed);
+			SetSecondarySpeed(newSpeed);
 		}
 
 		public void ResetSpeed() {
-			SetSpeed(BaseSpeed);
+			ResetPrimarySpeed();
+			ResetSecondarySpeed();
 		}
 
-		public void UpsertModifier(StatusType statusType, float multiplier) {
-			SpeedModifiers[statusType] = multiplier;
-			SpeedModifierHelper.ModifySpeed(this);
+		public void SetPrimarySpeed(float newSpeed) {
+			CurrentPrimarySpeed = Mathf.Max(0, newSpeed);
 		}
 
-		public void DeleteModifier(StatusType statusType) {
-			SpeedModifiers.Remove(statusType);
-			SpeedModifierHelper.ModifySpeed(this);
+		public void ResetPrimarySpeed() {
+			SetPrimarySpeed(BasePrimarySpeed);
+		}
+
+		public void SetSecondarySpeed(float newSpeed) {
+			CurrentSecondarySpeed = Mathf.Max(0, newSpeed);
+		}
+
+		public void ResetSecondarySpeed() {
+			SetSecondarySpeed(BaseSecondarySpeed);
+		}
+
+		public void UpsertSpeedModifier(StatusType statusType, float multiplier) {
+			UpsertPrimarySpeedModifier(statusType, multiplier);
+			UpsertSecondarySpeedModifier(statusType, multiplier);
+		}
+
+		public void DeleteSpeedModifier(StatusType statusType) {
+			DeletePrimarySpeedModifier(statusType);
+			DeleteSecondarySpeedModifier(statusType);
+		}
+
+		public void UpsertPrimarySpeedModifier(StatusType statusType, float multiplier) {
+			PrimarySpeedModifiers[statusType] = multiplier;
+		}
+
+		public void DeletePrimarySpeedModifier(StatusType statusType) {
+			PrimarySpeedModifiers.Remove(statusType);
+		}
+
+		public void UpsertSecondarySpeedModifier(StatusType statusType, float multiplier) {
+			SecondarySpeedModifiers[statusType] = multiplier;
+		}
+
+		public void DeleteSecondarySpeedModifier(StatusType statusType) {
+			SecondarySpeedModifiers.Remove(statusType);
 		}
 		#endregion
 
 
 		private void UpdateOpening() {
-			float openSpeed = GetSpeed();
+			float openSpeed = GetOpenSpeed();
 			if (openSpeed == 0f) {
 				SendFailure(ClockworkHingeError.CantOpen);
 				return;
@@ -152,7 +192,7 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 		}
 
 		private void UpdateClosing() {
-			float closeSpeed = GetSpeed();
+			float closeSpeed = GetCloseSpeed();
 			if (closeSpeed == 0f) {
 				SendFailure(ClockworkHingeError.CantClose);
 				return;
@@ -193,13 +233,22 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 			return Quaternion.Angle(current, destination) <= ROTATION_TOLERANCE;
 		}
 
-		private float GetSpeed() {
+		private float GetOpenSpeed() {
 			if (DamageableHelpers.TryGetHighestPriorityCondition(StatusConditions, out IStatusCondition priorityCondition)) {
 				if (priorityCondition.TryGetSpeedModifier(out float modifier))
-					return Speed * modifier;
+					return CurrentPrimarySpeed * modifier;
 			}
 
-			return CurrentSpeed;
+			return SpeedModifierHelper.GetPrimarySpeed(this);
+		}
+
+		private float GetCloseSpeed() {
+			if (DamageableHelpers.TryGetHighestPriorityCondition(StatusConditions, out IStatusCondition priorityCondition)) {
+				if (priorityCondition.TryGetSpeedModifier(out float modifier))
+					return CurrentSecondarySpeed * modifier;
+			}
+
+			return SpeedModifierHelper.GetSecondarySpeed(this);
 		}
 
 		private void SendFailure(ClockworkHingeError error) {

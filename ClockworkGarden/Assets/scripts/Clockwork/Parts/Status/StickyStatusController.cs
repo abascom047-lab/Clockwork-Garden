@@ -18,11 +18,11 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 			if (partSpeed != null) {
 				float multiplier = 1f - index / (_thresholds.Length - 1f);
 				if (multiplier == 1) {
-					partSpeed.DeleteModifier(_type);
+					partSpeed.DeletePrimarySpeedModifier(_type);
 					return;
 				}
 
-				partSpeed.UpsertModifier(_type, multiplier);
+				partSpeed.UpsertPrimarySpeedModifier(_type, multiplier);
 			}
 
 			base.ThresholdPassed(index);
