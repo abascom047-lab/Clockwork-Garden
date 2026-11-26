@@ -2,16 +2,16 @@
 
 namespace Assets.scripts.Clockwork.Parts.Helpers {
 	public static class SpeedModifierHelper {
-		public static float getPrimarySpeed(IPartModifiableSpeed modSpeed) {
-			float newSpeed = modSpeed.BasePrimarySpeed;
+		public static float GetPrimarySpeed(IPartModifiableSpeed modSpeed) {
+			float newSpeed = modSpeed.CurrentPrimarySpeed;
 			foreach (float modifier in modSpeed.PrimarySpeedModifiers.Values)
 				newSpeed *= modifier;
 
 			return newSpeed;
 		}
 
-		public static float getSecondarySpeed(IPartModifiableSpeed modSpeed) {
-			float newSpeed = modSpeed.BaseSecondarySpeed;
+		public static float GetSecondarySpeed(IPartModifiableSpeed modSpeed) {
+			float newSpeed = modSpeed.CurrentSecondarySpeed;
 			foreach (float modifier in modSpeed.SecondarySpeedModifiers.Values)
 				newSpeed *= modifier;
 

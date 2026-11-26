@@ -239,7 +239,7 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 					return CurrentPrimarySpeed * modifier;
 			}
 
-			return SpeedModifierHelper.getPrimarySpeed(this);
+			return SpeedModifierHelper.GetPrimarySpeed(this);
 		}
 
 		private float GetCloseSpeed() {
@@ -248,7 +248,7 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 					return CurrentSecondarySpeed * modifier;
 			}
 
-			return SpeedModifierHelper.getSecondarySpeed(this);
+			return SpeedModifierHelper.GetSecondarySpeed(this);
 		}
 
 		private void SendFailure(ClockworkHingeError error) {
