@@ -3,6 +3,7 @@ using Assets.scripts.Clockwork.Parts.Status;
 using Assets.scripts.Clockwork.Parts.Status.Conditions;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace Assets.scripts.Clockwork.Parts.Helpers {
 	public static class DamageableHelpers {
@@ -30,7 +31,7 @@ namespace Assets.scripts.Clockwork.Parts.Helpers {
 			foreach (float modifier in damageableInterface.DurabilityModifiers.Values)
 				durability *= modifier;
 
-			return durability;
+			return Mathf.Clamp(durability, DurabilityStatusController.MIN_VALUE, DurabilityStatusController.MAX_VALUE);
 		}
 	}
 }

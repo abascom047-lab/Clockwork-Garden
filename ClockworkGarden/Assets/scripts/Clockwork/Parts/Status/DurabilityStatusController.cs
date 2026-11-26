@@ -2,20 +2,22 @@
 
 namespace Assets.scripts.Clockwork.Parts.Status {
 	public class DurabilityStatusController : BaseStatusController {
+		public const float MIN_VALUE = 0f;
 		public const float MAX_VALUE = 100f;
 
 		public override void Add(StatusType addType, float addValue) {
 			base.Add(addType, addValue);
-			CurrentValue = Mathf.Clamp(CurrentValue, StartValue, MAX_VALUE);
+			CurrentValue = Mathf.Clamp(CurrentValue, MIN_VALUE, MAX_VALUE);
 		}
 
 		public override void Set(StatusType setType, float newValue) {
 			base.Set(setType, newValue);
-			CurrentValue = Mathf.Clamp(CurrentValue, StartValue, MAX_VALUE);
+			CurrentValue = Mathf.Clamp(CurrentValue, MIN_VALUE, MAX_VALUE);
 		}
 
 		protected override void OnStart() {
-			CurrentValue = Mathf.Clamp(CurrentValue, StartValue, MAX_VALUE);
+			CurrentValue = Mathf.Clamp(CurrentValue, MIN_VALUE, MAX_VALUE);
+			StartValue = MIN_VALUE;
 			_type = StatusType.Durability;
 
 			base.OnStart();
