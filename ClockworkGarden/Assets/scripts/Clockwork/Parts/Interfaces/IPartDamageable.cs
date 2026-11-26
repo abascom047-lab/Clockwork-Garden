@@ -5,9 +5,12 @@ using System.Collections.Generic;
 namespace Assets.scripts.Clockwork.Parts.Interfaces {
 	public interface IPartDamageable {
 		HashSet<IStatusCondition> StatusConditions { get; }
+		Dictionary<StatusType, float> DurabilityModifiers { get; }
 
 		void AddDamage(StatusType statusType, float damage);
 		void AddStatusCondition(IStatusCondition newCondition);
 		void RemoveStatusCondition(IStatusCondition oldCondition);
+		void UpsertDurabilityModifier(StatusType statusType, float modifier);
+		void DeleteDurabilityModifier(StatusType statusType);
 	}
 }

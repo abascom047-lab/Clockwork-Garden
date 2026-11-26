@@ -21,7 +21,7 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 		CantClose
 	}
 
-	public class ClockworkPartHingeController : MonoBehaviour, IPartDamageable, IPartModifiableSpeed {
+	public class ClockworkPartHingeController : MonoBehaviour, IPartDamageable, IPartSpeed {
 		public BaseStatusController[] StatusControls;
 		public Vector3 MinRotation = Vector3.zero;
 		public Vector3 MaxRotation = Vector3.zero;
@@ -38,9 +38,10 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 
 		#region // IPartDamageable properties
 		public HashSet<IStatusCondition> StatusConditions { get; private set; }
+		public Dictionary<StatusType, float> DurabilityModifiers { get; private set; }
 		#endregion
 
-		#region // IPartModifiableSpeed properties
+		#region // IPartSpeed properties
 		public float BasePrimarySpeed { get; private set; }
 		public float BaseSecondarySpeed { get; private set; }
 		public float CurrentPrimarySpeed { get; private set; }
@@ -60,14 +61,19 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 		private const float ROTATION_TOLERANCE = 0.1f;
 
 		void Awake() {
+			#region // IPartDamageable initialize properties
 			StatusConditions = new HashSet<IStatusCondition>();
+			DurabilityModifiers = new Dictionary<StatusType, float>();
+			#endregion
 
+			#region // IPartSpeed initialize properties
 			BasePrimarySpeed = Speed;
 			BaseSecondarySpeed = Speed;
 			CurrentPrimarySpeed = BasePrimarySpeed;
 			CurrentSecondarySpeed = BaseSecondarySpeed;
 			PrimarySpeedModifiers = new Dictionary<StatusType, float>();
 			SecondarySpeedModifiers = new Dictionary<StatusType, float>();
+			#endregion
 
 			_currentRotation = transform.localEulerAngles;
 
@@ -118,10 +124,18 @@ namespace Assets.scripts.Clockwork.Parts.Controllers {
 		public void RemoveStatusCondition(IStatusCondition oldCondition) {
 			StatusConditions.Remove(oldCondition);
 		}
+
+		public void UpsertDurabilityModifier(StatusType statusType, float modifier) {
+			DurabilityModifiers[statusType] = modifier;
+		}
+
+		public void DeleteDurabilityModifier(StatusType statusType) {
+			DurabilityModifiers.Remove(statusType);
+		}
 		#endregion
 
 
-		#region // IPartControllableSpeed Methods
+		#region // IPartSpeed Methods
 		public void SetSpeed(float newSpeed) {
 			SetPrimarySpeed(newSpeed);
 			SetSecondarySpeed(newSpeed);

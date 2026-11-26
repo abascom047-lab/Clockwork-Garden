@@ -28,6 +28,8 @@
 					}
 				}
 			}
+
+			base.OnUpdate();
 		}
 
 		protected virtual void ThresholdPassed(int index) { }

@@ -11,14 +11,20 @@
 		protected SingleThresholdState _state;
 
 		protected override void OnUpdate() {
-			if (CurrentValue == _threshold && _state != SingleThresholdState.At)
+			if (CurrentValue == _threshold && _state != SingleThresholdState.At) {
 				AtThreshold();
+				return;
+			}
 
-			if (CurrentValue > _threshold && _state != SingleThresholdState.Above)
+			if (CurrentValue > _threshold && _state != SingleThresholdState.Above) {
 				AboveThreshold();
+				return;
+			}
 
-			if (CurrentValue < _threshold && _state != SingleThresholdState.Below)
+			if (CurrentValue < _threshold && _state != SingleThresholdState.Below) {
 				BelowThreshold();
+				return;
+			}
 
 			base.OnUpdate();
 		}

@@ -1,4 +1,5 @@
-﻿using Assets.scripts.Clockwork.Parts.Interfaces;
+﻿using Assets.scripts.Clockwork.Parts.Helpers;
+using Assets.scripts.Clockwork.Parts.Interfaces;
 using Assets.scripts.Clockwork.Parts.Status.Conditions;
 using UnityEngine;
 
@@ -21,7 +22,7 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 				return;
 			}
 
-			addValue *= 1 - DurabilityControl.CurrentValue / DurabilityStatusController.MAX_VALUE;
+			addValue *= 1 - DamageableHelpers.GetModifiedDurability(_damageableInterface, DurabilityControl) / DurabilityStatusController.MAX_VALUE;
 
 			base.Add(addType, addValue);
 			CurrentValue = Mathf.Max(CurrentValue, StartValue);
