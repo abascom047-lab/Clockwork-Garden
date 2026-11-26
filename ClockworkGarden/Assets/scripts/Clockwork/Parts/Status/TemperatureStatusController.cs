@@ -2,16 +2,15 @@
 
 namespace Assets.scripts.Clockwork.Parts.Status {
 	public class TemperatureStatusController : MinMaxThresholdStatusController {
-		IPartSpeed _speedInterface;
-		IPartDamageable _damageableInterface;
+		public const float TEMPERATURE_THRESHOLD = 100f;
 
-		public bool Hot => _state == ThresholdState.Over;
-		public bool Cold => _state == ThresholdState.Under;
+		private IPartSpeed _speedInterface;
+		private IPartDamageable _damageableInterface;
 
 		protected override void OnStart() {
 			_type = StatusType.Temperature;
-			_minThreshold = -100;
-			_maxThreshold = 100;
+			_minThreshold = -TEMPERATURE_THRESHOLD;
+			_maxThreshold = TEMPERATURE_THRESHOLD;
 
 			_speedInterface = GetComponent<IPartSpeed>();
 			_damageableInterface = GetComponent<IPartDamageable>();

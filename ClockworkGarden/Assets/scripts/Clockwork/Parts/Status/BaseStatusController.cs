@@ -25,6 +25,10 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 		}
 
 		void Update() {
+			float speed = GetDecaySpeed();
+			if (speed > 0)
+				CurrentValue = Mathf.MoveTowards(CurrentValue, StartValue, speed * GameTime.Current);
+
 			OnUpdate();
 		}
 
@@ -39,10 +43,11 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 		}
 
 		protected virtual void OnStart() { }
-		1
-		protected virtual void OnUpdate() {
-			if (DecaySpeed > 0)
-				CurrentValue = Mathf.MoveTowards(CurrentValue, StartValue, DecaySpeed * GameTime.Current);
+		
+		protected virtual void OnUpdate() { }
+
+		protected virtual float GetDecaySpeed() {
+			return DecaySpeed;
 		}
 	}
 }

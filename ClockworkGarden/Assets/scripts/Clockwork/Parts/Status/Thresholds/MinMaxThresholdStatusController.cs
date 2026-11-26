@@ -6,8 +6,8 @@
 	}
 
 	public class MinMaxThresholdStatusController : BaseStatusController {
-		protected int _minThreshold = -10;
-		protected int _maxThreshold = 10;
+		protected float _minThreshold = -10f;
+		protected float _maxThreshold = 10f;
 		protected ThresholdState _state = ThresholdState.None;
 
 		protected override void OnUpdate() {

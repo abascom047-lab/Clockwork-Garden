@@ -1,34 +1,27 @@
 ﻿using Assets.scripts.Clockwork.Parts.Interfaces;
+using UnityEngine;
 
 namespace Assets.scripts.Clockwork.Parts.Status {
 	public class StickyStatusController : ManyThresholdStatusController {
 		public TemperatureStatusController TemperatureControl;
 
 		private IPartSpeed _speedInterface;
-		private float _baseDecaySpeed;
 
 		protected override void OnStart() {
 			_type = StatusType.Sticky;
 			_thresholds = new int[11] { 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
 			_reverse = false;
 			_speedInterface = GetComponent<IPartSpeed>();
-			_baseDecaySpeed = DecaySpeed;
 
 			base.OnStart();
 		}
 
-		protected override void OnUpdate() {
-			if (TemperatureControl != null) {
-				if (TemperatureControl.Hot) {
-					DecaySpeed = _baseDecaySpeed * 0.5f;
-				} else if (TemperatureControl.Cold) {
-					DecaySpeed = _baseDecaySpeed * 1.5f;
-				} else {
-					DecaySpeed = _baseDecaySpeed;
-				}
-			}
+		protected override float GetDecaySpeed() {
+			if (TemperatureControl == null)
+				return base.GetDecaySpeed();
 
-			base.OnUpdate();
+			float percentage = Mathf.Clamp(TemperatureControl.CurrentValue / TemperatureStatusController.TEMPERATURE_THRESHOLD, -1f, 1f);
+			return DecaySpeed * (1f - percentage * 0.5f);
 		}
 
 		protected override void ThresholdPassed(int index) {
