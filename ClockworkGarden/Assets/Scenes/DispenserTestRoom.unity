@@ -1512,8 +1512,8 @@ GameObject:
   - component: {fileID: 1652558615}
   - component: {fileID: 1652558617}
   - component: {fileID: 1652558619}
-  - component: {fileID: 1652558616}
   - component: {fileID: 1652558620}
+  - component: {fileID: 1652558616}
   - component: {fileID: 1652558618}
   m_Layer: 0
   m_Name: Hinge
@@ -1553,8 +1553,8 @@ MonoBehaviour:
   StatusControls:
   - {fileID: 1652558617}
   - {fileID: 1652558619}
-  - {fileID: 1652558616}
   - {fileID: 1652558620}
+  - {fileID: 1652558616}
   MinRotation: {x: -45, y: 0, z: 0}
   MaxRotation: {x: 0, y: 0, z: 0}
   Speed: 100
@@ -1574,6 +1574,7 @@ MonoBehaviour:
   CurrentValue: 0
   StartValue: 0
   DecaySpeed: 0.2
+  TemperatureControl: {fileID: 1652558620}
 --- !u!114 &1652558617
 MonoBehaviour:
   m_ObjectHideFlags: 0

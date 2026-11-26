@@ -8,8 +8,7 @@
 	public class MinMaxThresholdStatusController : BaseStatusController {
 		protected int _minThreshold = -10;
 		protected int _maxThreshold = 10;
-
-		private ThresholdState _state = ThresholdState.None;
+		protected ThresholdState _state = ThresholdState.None;
 
 		protected override void OnUpdate() {
 			if (CurrentValue >= _maxThreshold && _state != ThresholdState.Over) {

@@ -1,10 +1,12 @@
 ﻿using Assets.scripts.Clockwork.Parts.Interfaces;
-using Assets.scripts.Clockwork.Parts.Status;
 
-namespace Assets.scripts.Clockwork.Parts {
+namespace Assets.scripts.Clockwork.Parts.Status {
 	public class TemperatureStatusController : MinMaxThresholdStatusController {
 		IPartSpeed _speedInterface;
 		IPartDamageable _damageableInterface;
+
+		public bool Hot => _state == ThresholdState.Over;
+		public bool Cold => _state == ThresholdState.Under;
 
 		protected override void OnStart() {
 			_type = StatusType.Temperature;
