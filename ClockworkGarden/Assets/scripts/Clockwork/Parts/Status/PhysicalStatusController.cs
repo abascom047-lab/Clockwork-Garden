@@ -14,14 +14,7 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 			if (addType != StatusType.Physical)
 				return;
 
-			float percentage = Mathf.Abs(addValue / MaxValue);
-			float durabilityChange = DurabilityStatusController.MAX_VALUE * percentage;
-
 			if (addValue > 0) {
-				if (CurrentValue >= MaxValue) {
-					DurabilityControl.Add(StatusType.Durability, durabilityChange);
-				}
-
 				base.Add(addType, addValue);
 				CurrentValue = Mathf.Min(CurrentValue, MaxValue);
 				
@@ -31,7 +24,6 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 			addValue *= 1 - DurabilityControl.CurrentValue / DurabilityStatusController.MAX_VALUE;
 
 			base.Add(addType, addValue);
-			DurabilityControl.Add(StatusType.Durability, -durabilityChange);
 			CurrentValue = Mathf.Max(CurrentValue, StartValue);
 		}
 

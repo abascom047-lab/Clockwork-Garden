@@ -1615,7 +1615,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0977db03f5d014c4e95be4c6cb4f073a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.scripts.Clockwork.Parts.Status.DurabilityStatusController
-  CurrentValue: 100
+  CurrentValue: 50
   StartValue: 0
   DecaySpeed: 0
 --- !u!1 &1991724952

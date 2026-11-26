@@ -15,7 +15,7 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 		}
 
 		protected override void OnStart() {
-			CurrentValue = MAX_VALUE;
+			CurrentValue = Mathf.Clamp(CurrentValue, StartValue, MAX_VALUE);
 			_type = StatusType.Durability;
 
 			base.OnStart();
