@@ -5,6 +5,9 @@
 		protected bool _below = false;
 
 		protected override void OnUpdate() {
+			if (CurrentValue == _threshold && (_above || _below))
+				AtThreshold();
+
 			if (CurrentValue > _threshold && !_above)
 				AboveThreshold();
 
@@ -12,6 +15,11 @@
 				BelowThreshold();
 
 			base.OnUpdate();
+		}
+
+		protected virtual void AtThreshold() {
+			_above = false;
+			_below = false;
 		}
 
 		protected virtual void AboveThreshold() {

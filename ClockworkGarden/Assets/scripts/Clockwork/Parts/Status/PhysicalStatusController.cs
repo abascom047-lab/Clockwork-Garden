@@ -45,12 +45,17 @@ namespace Assets.scripts.Clockwork.Parts.Status {
 			CurrentValue = Mathf.Clamp(CurrentValue, StartValue, MaxValue);
 
 			_type = StatusType.Physical;
-			_threshold = 1;
+			_threshold = 0;
 
 			_damageableInterface = gameObject.GetComponent<IPartDamageable>();
 			_disabledCondition = new DisabledStatusCondition();
 
 			base.OnStart();
+		}
+
+		protected override void AtThreshold() {
+			_damageableInterface.AddStatusCondition(_disabledCondition);
+			base.AtThreshold();
 		}
 
 		protected override void AboveThreshold() {
