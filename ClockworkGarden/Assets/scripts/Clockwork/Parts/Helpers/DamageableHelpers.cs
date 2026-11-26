@@ -1,4 +1,5 @@
-﻿using Assets.scripts.Clockwork.Parts.Status;
+﻿using Assets.scripts.Clockwork.Parts.Interfaces;
+using Assets.scripts.Clockwork.Parts.Status;
 using Assets.scripts.Clockwork.Parts.Status.Conditions;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +23,14 @@ namespace Assets.scripts.Clockwork.Parts.Helpers {
 			}
 
 			return true;
+		}
+
+		public static float GetModifiedDurability(IPartDamageable damageableInterface, DurabilityStatusController durabilityControl) {
+			float durability = durabilityControl.CurrentValue;
+			foreach (float modifier in damageableInterface.DurabilityModifiers.Values)
+				durability *= modifier;
+
+			return durability;
 		}
 	}
 }

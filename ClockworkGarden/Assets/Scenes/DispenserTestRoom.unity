@@ -1513,6 +1513,7 @@ GameObject:
   - component: {fileID: 1652558617}
   - component: {fileID: 1652558619}
   - component: {fileID: 1652558616}
+  - component: {fileID: 1652558620}
   - component: {fileID: 1652558618}
   m_Layer: 0
   m_Name: Hinge
@@ -1553,6 +1554,7 @@ MonoBehaviour:
   - {fileID: 1652558617}
   - {fileID: 1652558619}
   - {fileID: 1652558616}
+  - {fileID: 1652558620}
   MinRotation: {x: -45, y: 0, z: 0}
   MaxRotation: {x: 0, y: 0, z: 0}
   Speed: 100
@@ -1617,6 +1619,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.scripts.Clockwork.Parts.Status.DurabilityStatusController
   CurrentValue: 50
+  StartValue: 0
+  DecaySpeed: 0
+--- !u!114 &1652558620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1652558613}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbf9aafdc4405844d91903f3b30731dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.scripts.Clockwork.Parts.TemperatureStatusController
+  CurrentValue: 0
   StartValue: 0
   DecaySpeed: 0
 --- !u!1 &1991724952

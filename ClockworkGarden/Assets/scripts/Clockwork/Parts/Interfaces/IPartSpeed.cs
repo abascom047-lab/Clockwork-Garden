@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 namespace Assets.scripts.Clockwork.Parts.Interfaces {
-	public interface IPartModifiableSpeed {
+	public interface IPartSpeed {
 		float BasePrimarySpeed { get; }
 		float BaseSecondarySpeed { get; }
 		float CurrentPrimarySpeed { get; }

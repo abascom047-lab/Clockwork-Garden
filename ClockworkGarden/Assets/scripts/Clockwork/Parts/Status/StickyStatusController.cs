@@ -3,13 +3,13 @@ using UnityEngine;
 
 namespace Assets.scripts.Clockwork.Parts.Status {
 	public class StickyStatusController : ManyThresholdStatusController {
-		private IPartModifiableSpeed partSpeed;
+		private IPartSpeed partSpeed;
 
 		protected override void OnStart() {
 			_type = StatusType.Sticky;
 			_thresholds = new int[11] { 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
 			_reverse = false;
-			partSpeed = GetComponent<IPartModifiableSpeed>();
+			partSpeed = GetComponent<IPartSpeed>();
 
 			base.OnStart();
 		}
