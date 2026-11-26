@@ -1,35 +1,38 @@
 ﻿namespace Assets.scripts.Clockwork.Parts.Status {
+	public enum SingleThresholdState {
+		None,
+		Above,
+		At,
+		Below
+	}
+
 	public class SingleThresholdStatusController : BaseStatusController {
 		protected int _threshold;
-		protected bool _above = false;
-		protected bool _below = false;
+		protected SingleThresholdState _state;
 
 		protected override void OnUpdate() {
-			if (CurrentValue == _threshold && (_above || _below))
+			if (CurrentValue == _threshold && _state != SingleThresholdState.At)
 				AtThreshold();
 
-			if (CurrentValue > _threshold && !_above)
+			if (CurrentValue > _threshold && _state != SingleThresholdState.Above)
 				AboveThreshold();
 
-			if (CurrentValue < _threshold && !_below)
+			if (CurrentValue < _threshold && _state != SingleThresholdState.Below)
 				BelowThreshold();
 
 			base.OnUpdate();
 		}
 
 		protected virtual void AtThreshold() {
-			_above = false;
-			_below = false;
+			_state = SingleThresholdState.At;
 		}
 
 		protected virtual void AboveThreshold() {
-			_above = true;
-			_below = false;
+			_state = SingleThresholdState.Above;
 		}
 
 		protected virtual void BelowThreshold() {
-			_above = false;
-			_below = true;
+			_state = SingleThresholdState.Below;
 		}
 	}
 }
